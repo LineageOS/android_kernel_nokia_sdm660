@@ -77,3 +77,7 @@ obj-$(CONFIG_WIRELESS_CHARGER_STWLC33)	+= stwlc33_wl_charger.o
 obj-$(CONFIG_WIRELESS_CHARGER_P9221)  += p9221_wl_charger.o
 obj-$(CONFIG_ARCH_QCOM)		+= qcom/
 obj-$(CONFIG_POWER_SUPPLY)	+= supply/
+
+# TODO: remove me b/62057517
+subdir-ccflags-y += \
+	-Wno-tentative-definition-incomplete-type
