@@ -69,7 +69,7 @@ obj-$(CONFIG_MEMORY_STATE_TIME) += memory_state_time.o
 #sharp param, zhangzhe@20171101
 obj-y                           += sharp_param.o
 
-# TODO: remove me b/62057517
+# TODO: remove me b/62058353
 subdir-ccflags-y += \
 	-Wno-ignored-attributes \
 	-Wno-header-guard
