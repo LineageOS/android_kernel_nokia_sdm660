@@ -434,3 +434,7 @@ obj-$(CONFIG_SND_SOC_TFA9891)	+= tfa9891/
 #rita add
 obj-$(CONFIG_SND_SOC_TAS2560)	+= tas2560/
 
+
+# TODO: remove me b/62058353
+subdir-ccflags-y += \
+	-Wno-enum-conversion
