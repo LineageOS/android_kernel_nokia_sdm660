@@ -81,6 +81,8 @@
 #define MIN_VENDOR_SPECIFIC_IE_SIZE     5
 #endif
 
+#define NO_SESSION 0xFF
+
 static tSirRetStatus lim_tdls_setup_add_sta(tpAniSirGlobal pMac,
 		tSirTdlsAddStaReq * pAddStaReq, tpPESession psessionEntry);
 
@@ -1622,7 +1624,7 @@ static tSirRetStatus lim_send_tdls_setup_rsp_frame(tpAniSirGlobal pMac,
 		if (wlan_cfg_get_int(pMac, WNI_CFG_MAX_SP_LENGTH, &val) !=
 		    eSIR_SUCCESS)
 			pe_warn("could not retrieve Max SP Length");
-			tdlsSetupRsp.WMMInfoStation.max_sp_length = (uint8_t) val;
+		tdlsSetupRsp.WMMInfoStation.max_sp_length = (uint8_t) val;
 		tdlsSetupRsp.WMMInfoStation.present = 1;
 	} else {
 		/*
