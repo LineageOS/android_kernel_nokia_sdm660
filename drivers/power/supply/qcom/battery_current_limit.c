@@ -294,6 +294,18 @@ static int get_and_evaluate_battery_soc(void)
 	union power_supply_propval ret = {0,};
 	int battery_percentage;
 	enum bcl_threshold_state prev_soc_state;
+	static struct power_supply *usb_psy;
+	int usb_state;
+	bool is_usb_present;
+
+	if (!usb_psy)
+		usb_psy = power_supply_get_by_name("usb");
+	if (usb_psy) {
+		usb_state = power_supply_get_property(usb_psy,
+				POWER_SUPPLY_PROP_PRESENT, &ret);
+		if (usb_state == 0)
+			is_usb_present = ret.intval;
+	}
 
 	if (!batt_psy)
 		batt_psy = power_supply_get_by_name("battery");
