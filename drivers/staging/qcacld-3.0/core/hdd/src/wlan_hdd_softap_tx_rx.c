@@ -869,7 +869,7 @@ QDF_STATUS hdd_softap_rx_packet_cbk(void *context, qdf_nbuf_t rx_buf)
 	struct sk_buff *next = NULL;
 	struct hdd_context *hdd_ctx = NULL;
 	struct qdf_mac_addr *src_mac;
-	uint8_t staid;
+	uint8_t staid = 0;
 
 	/* Sanity check on inputs */
 	if (unlikely((NULL == context) || (NULL == rx_buf))) {
