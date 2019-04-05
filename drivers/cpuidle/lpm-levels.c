@@ -1453,6 +1453,67 @@ unlock_and_return:
 	return state_id;
 }
 
+//CORE-PK-RPMStatsLog-00+[
+#ifdef CONFIG_FIH_FEATURE_RPM_STATS_LOG
+#include "../soc/qcom/rpm_stats.h"
+
+extern void msm_rpmstats_get_stats_v2(struct msm_rpmstats_mode_data *rpm_stats);
+extern struct msm_rpmstats_mode_data rpmstats_enter;
+extern struct msm_rpmstats_mode_data rpmstats_exit;
+extern struct msm_rpmstats_mode_data rpmstats_suspend;
+#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+extern void msm_show_rpm_master_stats(void);
+extern void get_apss_power_collapse_time(unsigned long *apps_pc_time);
+#endif
+
+static void msm_show_rpmstats(void)
+{
+	unsigned long xosd_msec_rem;
+	unsigned long vmin_msec_rem;
+
+	#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+	unsigned long apss_pc_time;
+	unsigned long apss_pc_time_rem;
+	unsigned long apss_left_time;
+	#endif
+
+	rpmstats_suspend.xosd_count = rpmstats_exit.xosd_count - rpmstats_enter.xosd_count;
+	rpmstats_suspend.xosd_time_since_last_mode = rpmstats_exit.xosd_time_since_last_mode;
+	rpmstats_suspend.xosd_actual_last_sleep = rpmstats_exit.xosd_actual_last_sleep - rpmstats_enter.xosd_actual_last_sleep;
+	rpmstats_suspend.vmin_count = rpmstats_exit.vmin_count - rpmstats_enter.vmin_count;
+	rpmstats_suspend.vmin_time_since_last_mode = rpmstats_exit.vmin_time_since_last_mode;
+	rpmstats_suspend.vmin_actual_last_sleep = rpmstats_exit.vmin_actual_last_sleep - rpmstats_enter.vmin_actual_last_sleep;
+
+	#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+	get_apss_power_collapse_time(&apss_pc_time);
+
+	if (apss_pc_time < rpmstats_suspend.vmin_actual_last_sleep)
+		apss_left_time = 0;
+	else
+		apss_left_time = (apss_pc_time - rpmstats_suspend.vmin_actual_last_sleep);
+
+	apss_pc_time_rem = do_div(apss_pc_time, 1000);
+
+	pr_info("[PM] APSS PC:%4lu.%-3lu (VMIN:%7lld; Left:%7ld)\n",
+		apss_pc_time, apss_pc_time_rem,
+		rpmstats_suspend.vmin_actual_last_sleep, apss_left_time );
+	#endif /* CONFIG_FIH_FEATURE_RPM_STATS_LOG */
+
+	xosd_msec_rem = do_div(rpmstats_suspend.xosd_actual_last_sleep, 1000);
+	vmin_msec_rem = do_div(rpmstats_suspend.vmin_actual_last_sleep, 1000);
+
+	pr_info("[PM] XOSD(cnt:%2u time:%3llu.%lu elapse:%5llu) VMIN(cnt:%4u time:%4llu.%-3lu elapse:%5llu)\n",
+		rpmstats_suspend.xosd_count, rpmstats_suspend.xosd_actual_last_sleep, xosd_msec_rem, rpmstats_suspend.xosd_time_since_last_mode,
+		rpmstats_suspend.vmin_count, rpmstats_suspend.vmin_actual_last_sleep, vmin_msec_rem, rpmstats_suspend.vmin_time_since_last_mode);
+
+	#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+	if (rpmstats_suspend.vmin_time_since_last_mode >= 30)
+		msm_show_rpm_master_stats();
+	#endif
+}
+#endif /* CONFIG_FIH_FEATURE_RPM_STATS_LOG */
+//CORE-PK-RPMStatsLog-00+]
+
 #if !defined(CONFIG_CPU_V7)
 bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 {
@@ -1482,6 +1543,13 @@ bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 		state_id |= (power_state | affinity_level
 			| cluster->cpu->levels[idx].psci_id);
 
+		//CORE-PK-SuspendLog-00+[
+		#ifdef CONFIG_FIH_SUSPEND_RESUME_LOG
+		if (!from_idle)
+			msm_rpmstats_get_stats_v2(&rpmstats_enter);
+		#endif
+		//CORE-PK-SuspendLog-00+]
+
 		update_debug_pc_event(CPU_ENTER, state_id,
 						0xdeaffeed, 0xdeaffeed, true);
 		stop_critical_timings();
@@ -1489,6 +1557,17 @@ bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 		start_critical_timings();
 		update_debug_pc_event(CPU_EXIT, state_id,
 						success, 0xdeaffeed, true);
+
+		//CORE-PK-SuspendLog-00+[
+		#ifdef CONFIG_FIH_SUSPEND_RESUME_LOG
+		if (!from_idle) {
+			msm_rpmstats_get_stats_v2(&rpmstats_exit);
+			//pr_info("CPU%u:\n", cpu);
+			msm_show_rpmstats();
+		}
+		#endif
+		//CORE-PK-SuspendLog-00+
+
 		return success;
 	}
 }
@@ -1854,7 +1933,11 @@ static int lpm_suspend_enter(suspend_state_t state)
 	clock_debug_print_enabled();
 
 	BUG_ON(!use_psci);
+	#ifdef CONFIG_FIH_FEATURE_RPM_STATS_LOG
+	psci_enter_sleep(cluster, idx, false);
+	#else
 	psci_enter_sleep(cluster, idx, true);
+	#endif
 
 	if (idx > 0)
 		update_debug_pc_event(CPU_EXIT, idx, true, 0xdeaffeed,

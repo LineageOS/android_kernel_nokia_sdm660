@@ -288,6 +288,12 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(parallel_disable),
 	POWER_SUPPLY_ATTR(pe_start),
 	POWER_SUPPLY_ATTR(set_ship_mode),
+	POWER_SUPPLY_ATTR(fih_jeita_cool_more_levels),
+	POWER_SUPPLY_ATTR(fih_jeita_cool_more_levels_sts),
+	POWER_SUPPLY_ATTR(fih_jeita_cool_level_tmp_1),
+	POWER_SUPPLY_ATTR(fih_jeita_cool_level_tmp_2),
+	POWER_SUPPLY_ATTR(fih_jeita_cool_level_fcc_1),
+	POWER_SUPPLY_ATTR(fih_jeita_cool_level_fcc_2),
 	POWER_SUPPLY_ATTR(soc_reporting_ready),
 	POWER_SUPPLY_ATTR(debug_battery),
 	POWER_SUPPLY_ATTR(fcc_delta),
@@ -312,6 +318,8 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(enable_jeita_detection),
 	POWER_SUPPLY_ATTR(allow_hvdcp3),
 	POWER_SUPPLY_ATTR(max_pulse_allowed),
+	POWER_SUPPLY_ATTR(fg_reset_clock),
+	POWER_SUPPLY_ATTR(wipwr_range_status),
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_ATTR(charge_counter_ext),
 	/* Properties of type `const char *' */

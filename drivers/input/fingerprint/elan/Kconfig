@@ -1,0 +1,9 @@
+#
+# Configuration for ELAN
+#
+
+config ELAN_614R
+	bool "ELAN 614R Driver" 
+	default n
+	---help---
+	  This is a ELAN 614R chipset Driver.

@@ -1,0 +1,9 @@
+/* CTL DVT SDM636 */
+
+/* inherit EVT Settings */
+#include "ctl-EVT-636.dtsi"
+
+/* Diff */
+/* TP */
+#include "touch/touch-gt915l-ctc-ctlch14.dtsi"
+

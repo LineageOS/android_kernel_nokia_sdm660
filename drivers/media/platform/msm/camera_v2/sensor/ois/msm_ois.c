@@ -17,6 +17,7 @@
 #include "msm_sd.h"
 #include "msm_ois.h"
 #include "msm_cci.h"
+#include "../fih_camera_bbs.h"  //add
 
 DEFINE_MSM_MUTEX(msm_ois_mutex);
 /*#define MSM_OIS_DEBUG*/
@@ -32,6 +33,9 @@ static int32_t msm_ois_power_up(struct msm_ois_ctrl_t *o_ctrl);
 static int32_t msm_ois_power_down(struct msm_ois_ctrl_t *o_ctrl);
 
 static struct i2c_driver msm_ois_i2c_driver;
+
+extern int fih_camera_bbs_set(int id,int master,unsigned short sid,int module);//add
+extern void fih_camera_bbs_by_cci(int master,int sid,int error_code);//add
 
 static int32_t data_type_to_num_bytes(
 	enum msm_camera_i2c_data_type data_type)
@@ -424,6 +428,7 @@ static int32_t msm_ois_control(struct msm_ois_ctrl_t *o_ctrl,
 		cci_client->id_map = 0;
 		cci_client->cci_i2c_master = o_ctrl->cci_master;
 		cci_client->i2c_freq_mode = set_info->ois_params.i2c_freq_mode;
+		fih_camera_bbs_set((int)o_ctrl->pdev->id,cci_client->cci_i2c_master,(unsigned short)cci_client->sid,FIH_BBS_CAMERA_MODULE_OIS);//add
 	} else {
 		o_ctrl->i2c_client.client->addr =
 			set_info->ois_params.i2c_addr;
@@ -495,13 +500,29 @@ static int32_t msm_ois_config(struct msm_ois_ctrl_t *o_ctrl,
 		break;
 	case CFG_OIS_POWERDOWN:
 		rc = msm_ois_power_down(o_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+		fih_camera_bbs_by_cci(o_ctrl->i2c_client.cci_client->cci_i2c_master,
+			o_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_DW);
+#endif
 		if (rc < 0)
+		{
 			pr_err("msm_ois_power_down failed %d\n", rc);
+			fih_camera_bbs_by_cci(o_ctrl->i2c_client.cci_client->cci_i2c_master,
+				o_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_DW);
+		}
 		break;
 	case CFG_OIS_POWERUP:
 		rc = msm_ois_power_up(o_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+		fih_camera_bbs_by_cci(o_ctrl->i2c_client.cci_client->cci_i2c_master,
+			o_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_UP);
+#endif
 		if (rc < 0)
+		{
 			pr_err("Failed ois power up%d\n", rc);
+			fih_camera_bbs_by_cci(o_ctrl->i2c_client.cci_client->cci_i2c_master,
+				o_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_UP);
+		}
 		break;
 	case CFG_OIS_CONTROL:
 		rc = msm_ois_control(o_ctrl, &cdata->cfg.set_info);

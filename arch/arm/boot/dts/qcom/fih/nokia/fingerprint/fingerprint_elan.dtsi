@@ -1,0 +1,17 @@
+&soc {
+	elan {
+			compatible = "elan,elan_fp";
+			status = "okay";
+			interrupt-parent = <&tlmm>;
+			interrupts = <72 0x0>;
+			elan,irq-gpio = <&tlmm 72 0x00>;
+			elan,rst-gpio = <&tlmm 20 0x00>;
+			vdd_io-supply = <&fp_avdd_vreg>;
+	};
+};
+
+&fp_avdd_vreg {
+    regulator-boot-on;
+};
+
+

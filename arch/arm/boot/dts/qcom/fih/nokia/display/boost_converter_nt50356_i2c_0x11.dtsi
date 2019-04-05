@@ -1,0 +1,31 @@
+/*
+   Boost Converter IC - NOVATEK NT50356
+
+*/
+
+//&i2c_2 {
+//	status = "ok";
+//    nt50356@11{ 
+//	    compatible = "novatek,nt50356";
+//	    reg = <0x11>;
+//	    novatek,avdd-voltage = <0x24>;
+//	    novatek,avee-voltage = <0x24>;
+//	    novatek,bl-en-gpio = <&tlmm 28 0x00>;
+//	    novatek,enp-gpio = <&tlmm 31 0x00>;
+//	    novatek,enn-gpio = <&tlmm 72 0x00>;
+//    };
+//};
+
+&i2c_7 {
+	status = "ok";
+    nt50356@11{ 
+	    compatible = "novatek,nt50356";
+	    reg = <0x11>;
+	    novatek,avdd-voltage = <0x20>;
+	    novatek,avee-voltage = <0x20>;
+	    novatek,bl-en-gpio = <&tlmm 13 0x00>;
+	    novatek,enp-gpio = <&tlmm 35 0x00>;
+	    novatek,enn-gpio = <&tlmm 48 0x00>;
+	    novatek,id-gpio = <&tlmm 62 0x00>;
+    };
+};

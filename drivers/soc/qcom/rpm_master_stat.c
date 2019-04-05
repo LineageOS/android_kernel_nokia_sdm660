@@ -77,6 +77,18 @@ struct msm_rpm_master_stats_private_data {
 	struct msm_rpm_master_stats_platform_data *platform_data;
 };
 
+//CORE-PK-Show_rpm_master_stats-00+{
+#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+struct msm_rpm_master_stats_private_data *dbg_prvdata;
+
+struct dbg_msm_rpm_master_stats {
+	uint32_t active_cores;
+	uint64_t shutdown_req;
+	uint64_t bringup_ack;
+};
+#endif
+//CORE-PK-Show_rpm_master_stats-00+}
+
 int msm_rpm_master_stats_file_close(struct inode *inode,
 		struct file *file)
 {
@@ -259,6 +271,95 @@ static int msm_rpm_master_copy_stats(
 	return RPM_MASTERS_BUF_LEN - count;
 }
 
+//CORE-PK-Show_rpm_master_stats-00+{
+#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+static void dbg_msm_rpm_master_copy_stats_v2(
+		struct msm_rpm_master_stats_private_data *prvdata)
+{
+	struct dbg_msm_rpm_master_stats record;
+	struct msm_rpm_master_stats_platform_data *pdata;
+	unsigned long bringup_ack_rem, shutdown_req_rem;
+	int count = 0;
+	int master_cnt = 0;
+	char *buf;
+
+	pdata = prvdata->platform_data;
+	count = RPM_MASTERS_BUF_LEN;
+	buf = prvdata->buf;
+
+	while (master_cnt < prvdata->num_masters) {
+		record.shutdown_req = readq_relaxed(prvdata->reg_base +
+			(master_cnt * pdata->master_offset +
+			offsetof(struct msm_rpm_master_stats, shutdown_req)));
+
+		record.bringup_ack = readq_relaxed(prvdata->reg_base +
+			(master_cnt * pdata->master_offset +
+			offsetof(struct msm_rpm_master_stats, bringup_ack)));
+
+		record.active_cores = readl_relaxed(prvdata->reg_base +
+			(master_cnt * pdata->master_offset) +
+			offsetof(struct msm_rpm_master_stats, active_cores));
+
+		/* tick to ms */
+		(void)do_div(record.bringup_ack, 19200);
+		(void)do_div(record.shutdown_req, 19200);
+		/* ms to s, and remaining. */
+		bringup_ack_rem = do_div(record.bringup_ack, 1000);
+		shutdown_req_rem = do_div(record.shutdown_req, 1000);
+
+		SNPRINTF(buf, count, "[PM] sleep_info_m.%d - %7llu.%-3lu(0x%0x), %7llu.%-3lu s\n",
+			master_cnt,
+			record.bringup_ack,
+			bringup_ack_rem,
+			record.active_cores,
+			record.shutdown_req,
+			shutdown_req_rem );
+
+		master_cnt++;
+	}
+}
+
+void msm_show_rpm_master_stats(void)
+{
+	if (dbg_prvdata) {
+		dbg_msm_rpm_master_copy_stats_v2(dbg_prvdata);
+		pr_info("%s", dbg_prvdata->buf);
+	} else {
+		pr_err("%s: rpm_master_stats info not ready.", __func__);
+	}
+}
+EXPORT_SYMBOL(msm_show_rpm_master_stats);
+
+static uint64_t dbg_msm_rpm_master_copy_APPS_stats(
+		struct msm_rpm_master_stats_private_data *prvdata)
+{
+	struct dbg_msm_rpm_master_stats record;
+
+		record.shutdown_req = readq_relaxed(prvdata->reg_base +
+			offsetof(struct msm_rpm_master_stats, shutdown_req));
+
+		record.bringup_ack = readq_relaxed(prvdata->reg_base +
+			offsetof(struct msm_rpm_master_stats, bringup_ack));
+
+		/* tick to ms */
+		(void)do_div(record.bringup_ack, 19200);
+		(void)do_div(record.shutdown_req, 19200);
+
+		return (record.bringup_ack - record.shutdown_req);
+}
+
+void get_apss_power_collapse_time(uint64_t *apps_pc_time)
+{
+	if (dbg_prvdata) {
+		*apps_pc_time = dbg_msm_rpm_master_copy_APPS_stats(dbg_prvdata);
+	} else
+		pr_err("%s: rpm_master_stats info not ready.", __func__);
+}
+EXPORT_SYMBOL(get_apss_power_collapse_time);
+
+#endif /* CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG */
+//CORE-PK-Show_rpm_master_stats-00+}
+
 static ssize_t msm_rpm_master_stats_file_read(struct file *file,
 				char __user *bufu, size_t count, loff_t *ppos)
 {
@@ -434,6 +535,33 @@ static  int msm_rpm_master_stats_probe(struct platform_device *pdev)
 
 	pdata->phys_addr_base = res->start;
 	pdata->phys_size = resource_size(res);
+
+//CORE-PK-Show_rpm_master_stats-00+{
+#ifdef CONFIG_FIH_FEATURE_RPM_MASTER_STATS_LOG
+	dbg_prvdata =
+		kzalloc(sizeof(struct msm_rpm_master_stats_private_data),
+			GFP_KERNEL);
+
+	if (!dbg_prvdata)
+		return -ENOMEM;
+
+	dbg_prvdata->reg_base = ioremap_nocache(pdata->phys_addr_base,
+						pdata->phys_size);
+	if (!dbg_prvdata->reg_base) {
+		kfree(dbg_prvdata);
+		dbg_prvdata = NULL;
+		pr_err("%s: ERROR could not ioremap start=%p, len=%u\n",
+			__func__, (void *)pdata->phys_addr_base,
+			pdata->phys_size);
+		return -EBUSY;
+	}
+
+	dbg_prvdata->len = 0;
+	dbg_prvdata->num_masters = pdata->num_masters;
+	dbg_prvdata->master_names = pdata->masters;
+	dbg_prvdata->platform_data = pdata;
+#endif
+//CORE-PK-Show_rpm_master_stats-00+}
 
 	dent = debugfs_create_file("rpm_master_stats", S_IRUGO, NULL,
 					pdata, &msm_rpm_master_stats_fops);

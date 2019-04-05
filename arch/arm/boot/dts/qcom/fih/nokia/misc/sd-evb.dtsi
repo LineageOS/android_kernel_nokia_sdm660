@@ -1,0 +1,3 @@
+&sdhc_2 {
+	cd-gpios = <&tlmm 54 0x0>;
+};

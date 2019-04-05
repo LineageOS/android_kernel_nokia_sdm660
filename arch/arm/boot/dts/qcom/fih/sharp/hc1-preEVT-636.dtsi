@@ -1,0 +1,62 @@
+/* HC1 preEVT SDM636 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* Common DT Info */
+#include "../nokia/common/common_info_sdm_v8.dtsi"
+
+/* SYSTEM parts */
+#include "../nokia/common/system-preEVT-630.dtsi"
+
+/* External LDO control */
+#include "../nokia/ext-reguator/fixed-regulator-EVT-v1.dtsi"
+
+/* Keypad parts */
+#include "../nokia/misc/keypad.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "../nokia/charger/charger-evt1.dtsi"
+#include "../nokia/charger/ctl-setting.dtsi"
+
+/* Audio */
+
+/* Camera */
+#include "../nokia/camera/camera-ctl-evt.dtsi"
+
+/* Haptic */
+#include "../nokia/misc/haptics-drg.dtsi"
+
+/* SD */
+#include "../nokia/misc/sd-evb.dtsi"
+
+/* Fingerprint */
+#include "../nokia/fingerprint/fingerprint-gf5288-evt.dtsi"
+
+/* Sensor */
+/* NO HALL Sensor */
+
+/* Touch */
+#include "../nokia/touch/touch-gt915l-ctc-ctlch14.dtsi"
+
+/* LCM */
+/* SW4-HL-Display-CTL-JD9522Z-BringUp-00+{_20180417 */
+#include "../nokia/display/dsi-panel-fih-ctl-ctc-otm1911a-fhd-video.dtsi"
+#include "../nokia/display/dsi-panel-fih-ctl-auo-otm1911a-fhd-video.dtsi"
+#include "../nokia/display/dsi-panel-fih-ctl-ctc-jd9522z-fhd-video.dtsi"
+/* SW4-HL-Display-CTL-JD9522Z-BringUp-00+}_20180417 */
+
+/* HDR */
+#include "../nokia/display/pxlw-iris3-cfg-fih-ctl-ctc-otm1911a-fhd-video.dtsi"
+#include "../nokia/display/pxlw-iris3-cfg-fih-ctl-ctc-jd9522z-fhd-video.dtsi"
+
+
+/* NFC */
+/* Samsung */
+#include "../nokia/samsungnfc/ctl_avl8895_i2c.dtsi"

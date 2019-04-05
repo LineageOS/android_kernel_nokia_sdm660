@@ -1,0 +1,10 @@
+&soc {
+	TI,hallsensor {
+		compatible = "ti,ah1902";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x75 0x00>;
+		hallsensor,irq-gpio = <&tlmm 75 0x00>;
+
+		vdd-supply= <&pm660_l14>;
+	};
+};

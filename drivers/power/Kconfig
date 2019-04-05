@@ -442,6 +442,12 @@ config CHARGER_BQ25890
 	help
 	  Say Y to enable support for the TI BQ25890 battery charger.
 
+config CHARGER_BQ25600_SLAVE
+	tristate "TI BQ25600 battery charger slave driver"
+	depends on I2C
+	help
+	  Say Y to enable support for the TI BQ25600 battery charger.
+
 config CHARGER_SMB347
 	tristate "Summit Microelectronics SMB347 Battery Charger"
 	depends on I2C
@@ -520,6 +526,18 @@ config AXP20X_POWER
 	help
 	  This driver provides support for the power supply features of
 	  AXP20x PMIC.
+
+config WIRELESS_CHARGER_STWLC33
+	bool "ST STWLC33 Wireless Charging control Driver"
+	depends on I2C
+	help
+	  ST STWLC33 wireless charging control driver
+
+config WIRELESS_CHARGER_P9221
+	bool "IDT P9221 Wireless Charging control Driver"
+	depends on I2C
+	help
+	  IDT P9221 wireless charging control driver
 
 source "drivers/power/reset/Kconfig"
 source "drivers/power/supply/Kconfig"

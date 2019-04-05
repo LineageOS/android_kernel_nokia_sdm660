@@ -1589,6 +1589,24 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
 }
 EXPORT_SYMBOL(cpufreq_quick_get);
 
+#ifdef CONFIG_FIH_CPU_USAGE
+void cpufreq_quick_get_infos(unsigned int cpu, unsigned int *min, unsigned int *max, unsigned int *cur)
+{
+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+
+	if (policy) {
+		if (min)
+			*min = policy->min;
+		if (max)
+			*max = policy->max;
+		if (cur)
+			*cur = policy->cur;
+		cpufreq_cpu_put(policy);
+	}
+}
+EXPORT_SYMBOL(cpufreq_quick_get_infos);
+#endif
+
 /**
  * cpufreq_quick_get_max - get the max reported CPU frequency for this CPU
  * @cpu: CPU number

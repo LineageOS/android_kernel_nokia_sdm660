@@ -1,0 +1,16 @@
+&i2c_4 {
+        status = "okay";
+        focaltech@38 {
+                compatible = "focaltech,fts";
+                reg = <0x38>;
+                interrupt-parent = <&tlmm>;
+                interrupts = <67 0x02>;
+                focaltech,reset-gpio = <&tlmm 66 0x01>;
+                focaltech,irq-gpio = <&tlmm 67 0x02>;
+                focaltech,max-touch-number = <10>;
+                focaltech,display-coords =  <0 0 1080 2160>;
+                focaltech,device-model = "B2N";
+                //FIH, Removed auto upgrade feature due to FW is not ready
+                //focaltech,fw-auto-upgrade-disable;
+        };
+};

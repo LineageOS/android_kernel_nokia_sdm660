@@ -1,0 +1,16 @@
+/*
+  Defined External LDO via fixed regulator driver control V1 for PLE2
+
+*/
+&soc {
+	fp_avdd_vreg: regulator_fp_avdd {
+		status = "okay";
+		compatible = "regulator-fixed";
+		regulator-name = "fp_avdd_vreg";
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <2800000>;
+		startup-delay-us = <100>;
+		enable-active-high;
+		gpio = <&tlmm 21 0>;
+	};
+};

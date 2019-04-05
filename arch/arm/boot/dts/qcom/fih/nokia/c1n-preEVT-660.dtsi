@@ -1,0 +1,45 @@
+/* C1N preEVT SDM660 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v1.dtsi"
+
+/* SYSTEM parts */
+#include "common/system-preEVT-660.dtsi"
+
+/* Keypad parts */
+#include "misc/keypad.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "charger/charger-evt1.dtsi"
+
+/* Audio */
+
+/* Camera */
+#include "camera/camera-evt.dtsi"
+
+/* Haptic */
+#include "misc/haptics.dtsi"
+
+/* SD */
+#include "misc/sd-evb.dtsi"
+
+/* Fingerprint */
+#include "fingerprint/fingerprint-gf5288-evt.dtsi"
+
+/* Sensor */
+#include "sensors/hallsensor-fih.dtsi"
+
+/* Touch */
+#include "touch/touch_ili2121x_v0.dtsi"
+
+/* LCM */
+#include "display/dsi-panel-fih-ili7807e-1080p-video.dtsi"

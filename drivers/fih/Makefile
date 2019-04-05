@@ -1,0 +1,19 @@
+obj-$(CONFIG_FIH_GPIO) += fih_gpio.o
+obj-$(CONFIG_FIH_INFO) += fih_info.o
+obj-$(CONFIG_FIH_MFD) += fih_mfd.o
+obj-$(CONFIG_FIH_APR) += fih_apr.o
+obj-$(CONFIG_FIH_UFSINFO) += fih_ufsinfo.o
+obj-$(CONFIG_FIH_DDR) += fih_ddr.o
+obj-$(CONFIG_FIH_SIBEAM_GPIO) += fih_sibeam_gpio.o
+obj-$(CONFIG_FIH_MFR) += fih_mfr.o
+obj-$(CONFIG_FIH_TOUCH) += fih_touch.o
+obj-$(CONFIG_FIH_LCM) += fih_lcm.o
+obj-$(CONFIG_FIH_EMMC) += fih_emmc.o
+#
+obj-$(CONFIG_FIH_DEVICE_TREE_DEBUG) += dt_debug/
+obj-$(CONFIG_FIH_HALL_SENSOR) += hallsensor/
+obj-$(CONFIG_FIH_HWCONFIG) += fih_swid.o
+obj-y += fih_camera_dev.o
+obj-$(CONFIG_FIH_APR) += fih_apr.o
+obj-y += fih_cpu.o
+obj-y += fih_rere.o

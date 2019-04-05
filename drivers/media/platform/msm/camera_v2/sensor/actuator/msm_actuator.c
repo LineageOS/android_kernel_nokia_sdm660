@@ -16,6 +16,8 @@
 #include "msm_sd.h"
 #include "msm_actuator.h"
 #include "msm_cci.h"
+#include "../fih_camera_bbs.h"  //add
+#include "fih_msm_actuator_recover.h" //add
 
 DEFINE_MSM_MUTEX(msm_actuator_mutex);
 
@@ -39,6 +41,10 @@ static struct msm_actuator msm_vcm_actuator_table;
 static struct msm_actuator msm_piezo_actuator_table;
 static struct msm_actuator msm_hvcm_actuator_table;
 static struct msm_actuator msm_bivcm_actuator_table;
+
+extern int fih_camera_bbs_set(int id,int master,unsigned short sid,int module);//add
+extern void fih_camera_bbs_by_cci(int master,int sid,int error_code);//add
+extern char* fih_camera_bbs_get_name_by_cci(int master,int sid);//add
 
 static struct i2c_driver msm_actuator_i2c_driver;
 static struct msm_actuator *actuators[] = {
@@ -368,6 +374,7 @@ static int32_t msm_actuator_init_focus(struct msm_actuator_ctrl_t *a_ctrl,
 {
 	int32_t rc = -EFAULT;
 	int32_t i = 0;
+	uint16_t val=0, reg_data = 0;///fihtdc@20180529, peter add
 	enum msm_camera_i2c_reg_addr_type save_addr_type;
 	CDBG("Enter\n");
 
@@ -408,6 +415,56 @@ static int32_t msm_actuator_init_focus(struct msm_actuator_ctrl_t *a_ctrl,
 				settings[i].data_type,
 				settings[i].delay);
 			break;
+		///fihtdc@20180529, peter add +++
+		case MSM_ACT_FIH_READ_AND_TO_WRITE:
+			rc = a_ctrl->i2c_client.i2c_func_tbl->i2c_read(
+				&a_ctrl->i2c_client,
+				settings[i].reg_addr,
+				&reg_data,
+				settings[i].data_type);
+				val=reg_data;
+				reg_data = (reg_data & settings[i].reg_data);
+			if( rc < 0 ){
+				pr_err("MSM_ACT_FIH_READ_AND_TO_WRITE: read 0x%x fail\n", settings[i].reg_addr);
+			}else{
+				CDBG("MSM_ACT_FIH_READ_AND_TO_WRITE: addr=0x%x, orig=%d, AND=%d, new=%d\n", settings[i].reg_addr, val, settings[i].reg_data, reg_data);
+				rc = a_ctrl->i2c_client.i2c_func_tbl->i2c_write(
+					&a_ctrl->i2c_client,
+					settings[i].reg_addr,
+					reg_data,
+					settings[i].data_type);
+				if (settings[i].delay > 20)
+					msleep(settings[i].delay);
+				else if (0 != settings[i].delay)
+					usleep_range(settings[i].delay * 1000,
+						(settings[i].delay * 1000) + 1000);
+			}
+			break;
+		case MSM_ACT_FIH_READ_OR_TO_WRITE:
+			rc = a_ctrl->i2c_client.i2c_func_tbl->i2c_read(
+				&a_ctrl->i2c_client,
+				settings[i].reg_addr,
+				&reg_data,
+				settings[i].data_type);
+				val=reg_data;
+				reg_data = (reg_data | settings[i].reg_data);
+			if( rc < 0 ){
+				pr_err("MSM_ACT_FIH_READ_OR_TO_WRITE: read 0x%x fail\n", settings[i].reg_addr);
+			}else{
+				CDBG("MSM_ACT_FIH_READ_OR_TO_WRITE: addr=0x%x, orig=%d, OR=%d, new=%d\n", settings[i].reg_addr, val, settings[i].reg_data, reg_data);
+				rc = a_ctrl->i2c_client.i2c_func_tbl->i2c_write(
+					&a_ctrl->i2c_client,
+					settings[i].reg_addr,
+					reg_data,
+					settings[i].data_type);
+				if (settings[i].delay > 20)
+					msleep(settings[i].delay);
+				else if (0 != settings[i].delay)
+					usleep_range(settings[i].delay * 1000,
+						(settings[i].delay * 1000) + 1000);
+			}
+			break;
+		///fihtdc@20180529, peter add ---
 		default:
 			pr_err("Unsupport i2c_operation: %d\n",
 				settings[i].i2c_operation);
@@ -842,6 +899,19 @@ static int32_t msm_actuator_park_lens(struct msm_actuator_ctrl_t *a_ctrl)
 		a_ctrl->park_lens.max_step = a_ctrl->max_code_size;
 
 	next_lens_pos = a_ctrl->step_position_table[a_ctrl->curr_step_pos];
+
+    /* MM-MC-FixCameraCloseOver10s-00+{ */
+    //DAC data size is 10 bits, value = 0~1024 
+    if ((next_lens_pos < 0)||(next_lens_pos > 1024))
+    {
+        int new_lens_pos = 0;
+        if (next_lens_pos > 1024)
+            new_lens_pos = 1024;
+        pr_err("Cam_%d: Change next_lens_pos from %d to %d \n", a_ctrl->cam_name, next_lens_pos, new_lens_pos);
+        next_lens_pos = new_lens_pos;
+    }
+    /* MM-MC-FixCameraCloseOver10s-00+} */
+
 	while (next_lens_pos) {
 		/* conditions which help to reduce park lens time */
 		if (next_lens_pos > (a_ctrl->park_lens.max_step *
@@ -1323,6 +1393,7 @@ static int32_t msm_actuator_set_param(struct msm_actuator_ctrl_t *a_ctrl,
 		cci_client->cci_i2c_master = a_ctrl->cci_master;
 		cci_client->i2c_freq_mode =
 			set_info->actuator_params.i2c_freq_mode;
+		fih_camera_bbs_set((int)a_ctrl->pdev->id,cci_client->cci_i2c_master,(unsigned short)cci_client->sid,FIH_BBS_CAMERA_MODULE_ACTUATOR);//add
 	} else {
 		a_ctrl->i2c_client.client->addr =
 			set_info->actuator_params.i2c_addr;
@@ -1488,8 +1559,16 @@ static int32_t msm_actuator_config(struct msm_actuator_ctrl_t *a_ctrl,
 		break;
 	case CFG_ACTUATOR_POWERDOWN:
 		rc = msm_actuator_power_down(a_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+		fih_camera_bbs_by_cci(a_ctrl->i2c_client.cci_client->cci_i2c_master,
+			a_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_DW);
+#endif
 		if (rc < 0)
+		{
 			pr_err("msm_actuator_power_down failed %d\n", rc);
+			fih_camera_bbs_by_cci(a_ctrl->i2c_client.cci_client->cci_i2c_master,
+				a_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_DW);
+		}
 		break;
 
 	case CFG_SET_POSITION:
@@ -1503,8 +1582,16 @@ static int32_t msm_actuator_config(struct msm_actuator_ctrl_t *a_ctrl,
 
 	case CFG_ACTUATOR_POWERUP:
 		rc = msm_actuator_power_up(a_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+		fih_camera_bbs_by_cci(a_ctrl->i2c_client.cci_client->cci_i2c_master,
+			a_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_UP);
+#endif
 		if (rc < 0)
+		{
 			pr_err("Failed actuator power up%d\n", rc);
+			fih_camera_bbs_by_cci(a_ctrl->i2c_client.cci_client->cci_i2c_master,
+				a_ctrl->i2c_client.cci_client->sid,FIH_BBS_CAMERA_ERRORCODE_POWER_UP);
+		}
 		break;
 
 	default:
@@ -1599,6 +1686,11 @@ static long msm_actuator_subdev_ioctl(struct v4l2_subdev *sd,
 	int rc;
 	struct msm_actuator_ctrl_t *a_ctrl = v4l2_get_subdevdata(sd);
 	void __user *argp = (void __user *)arg;
+	//add,start
+	char* actuator_name = NULL;
+	struct reg_settings_t *actuator_setting=NULL;
+	int size=0;
+	//add,end
 	CDBG("Enter\n");
 	CDBG("%s:%d a_ctrl %pK argp %pK\n", __func__, __LINE__, a_ctrl, argp);
 	switch (cmd) {
@@ -1609,6 +1701,31 @@ static long msm_actuator_subdev_ioctl(struct v4l2_subdev *sd,
 	case MSM_SD_NOTIFY_FREEZE:
 		return 0;
 	case MSM_SD_UNNOTIFY_FREEZE:
+		//add,start
+		pr_err("MSM_SD_UNNOTIFY_FREEZE in msm_actuator");
+		actuator_name = fih_camera_bbs_get_name_by_cci(a_ctrl->i2c_client.cci_client->cci_i2c_master,a_ctrl->i2c_client.cci_client->sid);
+		if (actuator_name==NULL)
+		{
+			pr_err("cannot find actuator name");
+			return 0;
+		}
+
+		pr_err("re-init %s actuator init setting",actuator_name);
+		rc = fih_get_recover_actuator_setting(actuator_name, &actuator_setting, &size);
+		if (rc<0)
+		{
+			pr_err("cannot find actuator setting for %s",actuator_name);
+			return 0;
+		}
+
+		if (a_ctrl->func_tbl->actuator_init_focus) {
+			rc = a_ctrl->func_tbl->actuator_init_focus(a_ctrl,size,actuator_setting);
+			if (rc < 0) {
+				pr_err("Error actuator_init_focus\n");
+				return -EFAULT;
+			}
+		}
+		//add,end
 		return 0;
 	case MSM_SD_SHUTDOWN:
 		if (!a_ctrl->i2c_client.i2c_func_tbl) {

@@ -1,0 +1,13 @@
+&i2c_2 {
+	bq25600: bq25600@6b {
+		compatible = "ti,bq25600-slave";
+		reg = <0x6b>;
+
+		ti,bq2560x,charging-disabled;
+		ti,bq2560x,chip-enable-gpio = <48>;
+		ti,bq2560x,charge-voltage = <4200>;
+		ti,bq2560x,charge-current = <1000>;
+		ti,bq2560x,input-current-limit = <500>;
+		ti,bq2560x,input-voltage-limit = <4500>;
+	};
+};

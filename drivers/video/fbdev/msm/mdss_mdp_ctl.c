@@ -1255,6 +1255,63 @@ static inline int cmpu32(const void *a, const void *b)
 	return (*(u32 *)a < *(u32 *)b) ? -1 : 0;
 }
 
+/* Return true if multi-rect layers are side by side */
+static bool is_rect_parallel(struct mdss_rect *rect1, struct mdss_rect *rect2)
+{
+	return (rect1->y >= rect2->y && rect1->y < rect2->y + rect2->h) ||
+		(rect2->y >= rect1->y && rect2->y < rect1->y + rect1->h);
+}
+
+/*
+ * Return true if multi-rect layers are placed serially,
+ * yet need parallel mode to accommodate prefill and detile latency.
+ *
+ * Smart DMA v1.0 mandates same format on both rects.
+ */
+static bool is_rect_parallel_multiplexed(
+	struct mdss_mdp_format_params *fmt, struct mdss_rect *rect1,
+	struct mdss_rect *rect2)
+{
+	u16 delta;
+
+	if (is_rect_parallel(rect1, rect2))
+		return false;
+
+	if (rect1->y >= rect2->y + rect2->h)
+		delta = rect1->y - rect2->y - rect2->h;
+	else
+		delta = rect2->y - rect1->y - rect1->h;
+
+	if (mdss_mdp_is_ubwc_format(fmt)) {
+		u16 tile_height, tile_width;
+
+		mdss_mdp_get_ubwc_micro_dim(fmt->format,
+			&tile_width, &tile_height);
+
+		/* Extra one line for safety */
+		if (delta <= 2 * tile_height)
+			return true;
+	} else if (mdss_mdp_is_linear_format(fmt) &&
+		(delta == 0 || delta == 1))
+		return true;
+
+	return false;
+}
+
+static bool is_pipe_parallel_multiplexed(struct mdss_mdp_pipe *pipe)
+{
+	struct mdss_mdp_pipe *pipe_rec;
+
+	if (pipe->multirect.mode != MDSS_MDP_PIPE_MULTIRECT_PARALLEL ||
+		!pipe->multirect.next)
+		return false;
+
+	pipe_rec = pipe->multirect.next;
+
+	return is_rect_parallel_multiplexed(pipe->src_fmt,
+		&pipe->dst, &pipe_rec->dst);
+}
+
 static void mdss_mdp_perf_calc_mixer(struct mdss_mdp_mixer *mixer,
 		struct mdss_mdp_perf_params *perf,
 		struct mdss_mdp_pipe **pipe_list, int num_pipes,
@@ -1441,6 +1498,34 @@ static void mdss_mdp_perf_calc_mixer(struct mdss_mdp_mixer *mixer,
 			prefill_val += tmp.bw_prefill;
 		else
 			prefill_val += tmp.prefill_bytes;
+	}
+
+	/*
+	 * Smart DMA v1.0 requires parallel multi-rect mode for serially
+	 * placed layers if delta lines between the layers is less than
+	 * 2 * tile_height for UBWC and 0/1 for linear formats. Detect
+	 * such combinations and add overlap bandwidth for both rects.
+	 */
+	for (i = 0; i < num_pipes; i++) {
+		pipe = pipe_list[i];
+
+		if (pipe->multirect.mode == MDSS_MDP_PIPE_MULTIRECT_PARALLEL) {
+			struct mdss_mdp_pipe *pipe_rec = NULL;
+			int j = i + 1;
+
+			while (j < num_pipes) {
+				if (pipe->multirect.next == pipe_list[j])
+					pipe_rec = pipe_list[j];
+				j++;
+			}
+
+			if (pipe_rec && is_pipe_parallel_multiplexed(pipe)) {
+				u64 tmp = bw_overlap[i];
+
+				bw_overlap[i] += bw_overlap[--j];
+				bw_overlap[j] += tmp;
+			}
+		}
 	}
 
 	/*

@@ -1312,7 +1312,10 @@ static const struct file_operations logsync_fops = {
 static int msm_probe(struct platform_device *pdev)
 {
 	struct msm_video_device *pvdev = NULL;
+#if 0//QC 03210652: just create a file and not writing anything. to disable it ++
+//junit.framework.AssertionFailedError: Found writable: [/sys/kernel/debug/camera/logsync]
 	static struct dentry *cam_debugfs_root;
+#endif //QC 03210652 --
 	int rc = 0;
 
 	msm_v4l2_dev = kzalloc(sizeof(*msm_v4l2_dev),
@@ -1396,6 +1399,8 @@ static int msm_probe(struct platform_device *pdev)
 	mutex_init(&v4l2_event_mtx);
 	INIT_LIST_HEAD(&ordered_sd_list);
 
+#if 0//QC 03210652: just create a file and not writing anything. to disable it ++
+//junit.framework.AssertionFailedError: Found writable: [/sys/kernel/debug/camera/logsync]
 	cam_debugfs_root = debugfs_create_dir(MSM_CAM_LOGSYNC_FILE_BASEDIR,
 						NULL);
 	if (!cam_debugfs_root) {
@@ -1408,7 +1413,7 @@ static int msm_probe(struct platform_device *pdev)
 					 &logsync_fops))
 			pr_warn("NON-FATAL: failed to create logsync debugfs file\n");
 	}
-
+#endif //QC 03210652 --
 	rc = cam_ahb_clk_init(pdev);
 	if (rc < 0) {
 		pr_err("%s: failed to register ahb clocks\n", __func__);

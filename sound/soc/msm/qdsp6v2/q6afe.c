@@ -135,7 +135,7 @@ static unsigned long afe_configured_cmd;
 
 static struct afe_ctl this_afe;
 
-#define TIMEOUT_MS 1000
+#define TIMEOUT_MS 2000
 #define Q6AFE_MAX_VOLUME 0x3FFF
 
 static int pcm_afe_instance[2];

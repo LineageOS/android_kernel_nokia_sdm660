@@ -30,6 +30,9 @@
 #include <linux/of_address.h>
 #include <linux/pm.h>
 #include <linux/pm_runtime.h>
+#if defined(CONFIG_PXLW_IRIS3)
+#include <linux/pm_qos.h>
+#endif
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/rpm-smd-regulator.h>
 #include <linux/module.h>
@@ -112,6 +115,10 @@ struct mdss_hw mdss_mdp_hw = {
 	.ptr = NULL,
 	.irq_handler = mdss_mdp_isr,
 };
+
+#if defined(CONFIG_PXLW_IRIS3)
+static struct pm_qos_request mdss_mdp_irq_lat_pm_qos_request;
+#endif
 
 /* define for h/w block with external driver */
 struct mdss_hw mdss_misc_hw = {
@@ -2244,6 +2251,11 @@ static void mdss_mdp_hw_rev_caps_init(struct mdss_data_type *mdata)
 	if (mdata->mdp_rev < MDSS_MDP_HW_REV_102 ||
 			mdata->mdp_rev == MDSS_MDP_HW_REV_200)
 		mdss_set_quirk(mdata, MDSS_QUIRK_FMT_PACK_PATTERN);
+
+#if defined(CONFIG_PXLW_IRIS3)
+	// TODO: suppose other panels do not declare HDR properties.
+	mdss_set_quirk(mdata, MDSS_QUIRK_HDR_SUPPORT_ENABLED);
+#endif
 }
 
 static void mdss_hw_rev_init(struct mdss_data_type *mdata)
@@ -3091,6 +3103,13 @@ static int mdss_mdp_probe(struct platform_device *pdev)
 	rc = mdss_mdp_pp_init(&pdev->dev);
 	if (rc)
 		pr_err("unable to initialize mdss pp resources\n");
+
+#if defined(CONFIG_PXLW_IRIS3)
+	mdss_mdp_irq_lat_pm_qos_request.type = PM_QOS_REQ_AFFINE_IRQ;
+	mdss_mdp_irq_lat_pm_qos_request.irq = mdss_mdp_hw.irq_info->irq;
+	pm_qos_add_request(&mdss_mdp_irq_lat_pm_qos_request,
+			   PM_QOS_CPU_DMA_LATENCY, PM_QOS_DEFAULT_VALUE);
+#endif
 
 	/* Restoring Secure configuration during boot-up */
 	if (mdss_mdp_req_init_restore_cfg(mdata))
@@ -5576,6 +5595,9 @@ static int mdss_mdp_remove(struct platform_device *pdev)
 	if (!mdata)
 		return -ENODEV;
 	pm_runtime_disable(&pdev->dev);
+#if defined(CONFIG_PXLW_IRIS3)
+	pm_qos_remove_request(&mdss_mdp_irq_lat_pm_qos_request);
+#endif
 	mdss_mdp_pp_term(&pdev->dev);
 	mdss_mdp_bus_scale_unregister(mdata);
 	if (mdata->mdss_cx_ipeak)
@@ -5585,6 +5607,15 @@ static int mdss_mdp_remove(struct platform_device *pdev)
 		regulator_unregister_notifier(mdata->fs, &(mdata->gdsc_cb));
 	return 0;
 }
+
+#if defined(CONFIG_PXLW_IRIS3)
+void mdss_mdp_irq_lat_pm_qos_update_request(int val)
+{
+	pr_debug("update request %d", val);
+	pm_qos_update_request(&mdss_mdp_irq_lat_pm_qos_request, val);
+}
+#endif
+
 
 static const struct of_device_id mdss_mdp_dt_match[] = {
 	{ .compatible = "qcom,mdss_mdp",},

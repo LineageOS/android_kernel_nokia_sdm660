@@ -1,0 +1,353 @@
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&slim_aud {
+  status = "disabled";
+};
+
+&dai_slim {
+  status = "disabled";
+};
+
+&wcd9335 {
+  status = "disabled";
+};
+
+&wcd934x_cdc {
+  status = "disabled";
+};
+
+&clock_audio {
+  status = "disabled";
+};
+
+&wcd_rst_gpio {
+  status = "disabled";
+};
+
+&wcd9xxx_intc {
+  status = "disabled";
+};
+
+&tasha_snd {
+  status = "disabled";
+};
+
+&tavil_snd {
+  status = "disabled";
+};
+
+&spi_7 {
+  status = "disabled";
+};
+
+&wdsp_mgr {
+  status = "disabled";
+};
+
+&wdsp_glink {
+  status = "disabled";
+};
+
+&glink_spi_xprt_wdsp {
+  status = "disabled";
+};
+
+&glink_fifo_wdsp {
+  status = "disabled";
+};
+
+&glink_qos_wdsp {
+  status = "disabled";
+};
+
+&int_codec {
+  status = "okay";
+  qcom,wsa-disable;
+  qcom,msm-hs-micbias-type = "internal";
+  qcom,model = "sdm660-snd-card-drg";
+  qcom,tert-mi2s-gpios = <&tert_mi2s_gpios>;
+  /delete-property/ qcom,us-euro-gpios;
+  /delete-property/ qcom,wsa-max-devs;
+  /delete-property/ qcom,wsa-devs;
+  /delete-property/ qcom,wsa-aux-dev-prefix;
+  /delete-property/ qcom,msm-micbias2-ext-cap;
+  /delete-property/ qcom,ext-disp-audio-rx;
+  qcom,msm-micbias1-ext-cap;
+  qcom,msm-micbias2-ext-cap;
+  qcom,audio-routing =
+  "RX_BIAS", "INT_MCLK0",
+  "SPK_RX_BIAS", "INT_MCLK0",
+  "INT_LDO_H", "INT_MCLK0",
+  "MIC BIAS Internal2", "Headset Mic",
+  "AMIC2", "MIC BIAS Internal2",
+  "MIC BIAS External", "Handset Mic",
+  "AMIC1", "MIC BIAS External",
+  "MIC BIAS External", "Secondary Mic",
+  "AMIC3", "MIC BIAS External",
+
+  "PDM_IN_RX1", "PDM_OUT_RX1",
+  "PDM_IN_RX2", "PDM_OUT_RX2",
+  "PDM_IN_RX3", "PDM_OUT_RX3",
+  "ADC1_IN", "ADC1_OUT",
+  "ADC2_IN", "ADC2_OUT",
+  "ADC3_IN", "ADC3_OUT";
+  fih,ti-tas2557;
+  fih,fih-mbhc-customized-debounce-supported = <9>;
+  fih,msm-hs-v-headset-max = <1700>;
+  fih,msm-btn-vol-thr-low = <100 225 440 440 440>;
+  fih,msm-btn-vol-thr-high = <100 225 440 440 440>;
+};
+
+&pmic_analog_codec {
+  status = "okay";
+};
+
+&msm_sdw_codec {
+  status = "okay";
+};
+
+&pm660l_3 {
+	pmic_analog_codec: analog-codec@f000 {
+		qcom,cdc-micbias-cfilt-mv = <2700000>;
+	};
+};
+
+&soc{
+
+    wsa_spkr_en1: wsa_spkr_en1_pinctrl {
+        status = "disabled";
+    };
+
+    wsa_spkr_en2: wsa_spkr_en2_pinctrl {
+        status = "disabled";
+    };
+
+    /* TFA9891 SmartAmp I2S */
+    qcom,msm-dai-mi2s {
+        dai_mi2s2: qcom,msm-dai-q6-mi2s-tert {
+            qcom,msm-dai-q6-mi2s-dev-id = <2>;
+            qcom,msm-mi2s-rx-lines = <1>;
+            qcom,msm-mi2s-tx-lines = <2>;
+        };
+    };
+    tert_mi2s_gpios: tert_mi2s_pinctrl {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&sdm660_gpio4_active &sdm660_gpio5_active &sdm660_gpio6_active &sdm660_gpio7_active>;
+		pinctrl-1 = <&sdm660_gpio4_sleep &sdm660_gpio5_sleep &sdm660_gpio6_sleep &sdm660_gpio7_sleep>;
+		qcom,lpi-gpios;
+    };
+    /* TFA9891 SmartAmp I2C */
+    i2c_7: i2c@c1b7000 {
+            pinctrl-names = "i2c_active", "i2c_sleep";
+            pinctrl-0 = <&sdm660_gpio26_active &sdm660_gpio27_active>;
+            pinctrl-1 = <&sdm660_gpio26_sleep &sdm660_gpio27_sleep>;
+            status = "okay";
+            tas2557@4c {
+                compatible = "ti,tas2557";
+                reg = <0x4c>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&tas2557_irq_default>;
+                ti,cdc-reset-gpio = <&tlmm 73 0>;
+                interrupt-parent = <&tlmm>;
+                interrupts = <76 0>;
+                ti,irq-gpio = <&tlmm 76 0>;
+                ti,i2s-bits = <16>;   /* support 16, 24, 32 */
+                ti,bypass-tmax = <0>;   /* 0, not bypass; 1, bypass */
+                tas2557,device-model = "DRG"; /* Select tas2557 firmware */
+            };
+    };
+    
+    /* gpio */
+   tlmm: pinctrl@03000000 {
+       /* gpio 76 */ /* SMARTAMP_IRQ */
+        tas2557_irq_default: tas2557_irq_default {
+          mux {
+              pins = "gpio76";
+              function = "gpio";
+          };
+
+          config {
+              pins = "gpio76";
+              drive-strength = <2>;
+              bias-disable = <0>;
+          };
+        };
+	/* gpio 26 */ /* SPK_I2C_SDA */
+	sdm660_gpio26_active: sdm660_gpio26_active {
+		mux {
+			pins = "gpio26";
+			function = "blsp_i2c7";
+		};
+
+		config {
+			pins = "gpio26";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	sdm660_gpio26_sleep: sdm660_gpio26_sleep {
+		mux {
+			pins = "gpio26";
+			function = "blsp_i2c7";
+		};
+
+		config {
+			pins = "gpio26";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	/* gpio 27 */ /* SPK_I2C_SCL */
+	sdm660_gpio27_active: sdm660_gpio27_active {
+		mux {
+			pins = "gpio27";
+			function = "blsp_i2c7";
+		};
+
+		config {
+			pins = "gpio27";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	sdm660_gpio27_sleep: sdm660_gpio27_sleep {
+		mux {
+			pins = "gpio27";
+			function = "blsp_i2c7";
+		};
+
+		config {
+			pins = "gpio27";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+    };
+        /* gpio */
+    lpi_tlmm: lpi_pinctrl@15070000 {
+        /* gpio 4 */ /* SPK_I2S_CLK */
+        sdm660_gpio4_active: sdm660_gpio4_active {
+            mux {
+                pins = "gpio4";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio4";
+                drive-strength = <8>;
+                bias-disable;
+                output-high;
+            };
+        };
+
+        sdm660_gpio4_sleep: sdm660_gpio4_sleep {
+            mux {
+                pins = "gpio4";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio4";
+                drive-strength = <2>;
+                bias-pull-down;
+            };
+        };
+
+        /* gpio 5 */ /* SPK_I2S_WS */
+        sdm660_gpio5_active: sdm660_gpio5_active {
+            mux {
+                pins = "gpio5";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio5";
+                drive-strength = <8>;
+                bias-disable;
+                output-high;
+            };
+        };
+
+        sdm660_gpio5_sleep: sdm660_gpio5_sleep {
+            mux {
+                pins = "gpio5";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio5";
+                drive-strength = <2>;
+                bias-pull-down;
+            };
+        };
+
+        /* gpio 6 */ /* SPK_I2S_DATA0 */
+        sdm660_gpio6_active: sdm660_gpio6_active {
+            mux {
+                pins = "gpio6";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio6";
+                drive-strength = <8>;
+                bias-disable;
+            };
+        };
+
+        sdm660_gpio6_sleep: sdm660_gpio6_sleep {
+            mux {
+                pins = "gpio6";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio6";
+                drive-strength = <2>;
+                bias-pull-down;
+            };
+        };
+
+        /* gpio 7 */ /* SPK_I2S_DATA1 */
+        sdm660_gpio7_active: sdm660_gpio7_active {
+            mux {
+                pins = "gpio7";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio7";
+                drive-strength = <8>;
+                bias-disable;
+                input-enable;
+            };
+        };
+
+        sdm660_gpio7_sleep: sdm660_gpio7_sleep {
+            mux {
+                pins = "gpio7";
+                function = "func4";
+            };
+
+            config {
+                pins = "gpio7";
+                drive-strength = <2>;
+                bias-pull-down;
+            };
+        };
+    };
+};

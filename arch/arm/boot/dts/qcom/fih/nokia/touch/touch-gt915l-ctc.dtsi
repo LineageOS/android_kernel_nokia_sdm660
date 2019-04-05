@@ -1,0 +1,133 @@
+/* 
+ * Goodix GT9xx touchscreen driver
+ * 
+ * Copyright  (C)  2010 - 2014 Goodix. Ltd.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be a reference 
+ * to you, when you are integrating the GOODiX's CTP IC into your system, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+ * General Public License for more details.
+ * 
+ */
+&tlmm{
+    /* add pingrp for Goodix touchscreen */
+    ts_int_default: ts_int_default {
+            mux {
+                    pins = "gpio67";
+                    function = "gpio";
+            };
+    
+            config {
+                    pins = "gpio67";
+                    drive-strength = <16>;
+                    bias-disable;
+                    input-enable;
+            };
+    };
+
+    ts_int_output_high: ts_int_output_high {
+            mux {
+                    pins = "gpio67";
+                    function = "gpio";
+            };
+    
+            config {
+                    pins = "gpio67";
+                    // drive-strength = <16>; 
+                    output-high;
+            };
+    };
+
+    ts_int_output_low: ts_int_output_low {
+            mux {
+                    pins = "gpio67";
+                    function = "gpio";
+            };
+    
+            config {
+                    pins = "gpio67";
+                    // drive-strength = <16>; 
+                    output-low;
+            };
+    };
+
+    ts_int_input: ts_int_input {
+            mux {
+                    pins = "gpio67";
+                    function = "gpio";
+            };
+
+            config {
+                    pins = "gpio67";
+                    bias-disable;
+                    input-enable;
+            };
+    };
+};
+                
+&i2c_4 {
+    status = "okay";
+    goodix_ts@5d {
+      compatible = "goodix,gt9xx";
+      reg = <0x5d>; 
+      status = "okay";
+      interrupt-parent = <&tlmm>;
+      interrupts = <67 0x2800>;
+      pinctrl-names = "default", "int-output-low","int-output-high", "int-input";
+      pinctrl-0 = <&ts_int_default>;
+      pinctrl-1 = <&ts_int_output_low>;
+      pinctrl-2 = <&ts_int_output_high>;
+      pinctrl-3 = <&ts_int_input>;
+      vdd_ana-supply = <&pm660l_l6>;		/* TP VCI - L6B(3.3V) */
+      vcc_i2c-supply = <&pm660_l11>;		/* TP I2C - L11A(1.8V) */
+
+      reset-gpios = <&tlmm 66 0x0>;
+      irq-gpios = <&tlmm 67 0x2800>;
+      irq-flags = <2>;
+
+      touchscreen-max-id = <11>;
+      touchscreen-size-x = <1080>; /*FIXED: Should be 1080*/
+      touchscreen-size-y = <2280>; /*FIXED: Should be 2280*/
+      touchscreen-max-w = <512>;
+      touchscreen-max-p = <512>;
+
+      goodix,slide-wakeup = <1>; /*Support DoubleTap*/
+      goodix,type-a-report = <0>;
+      goodix,driver-send-cfg = <0>;
+      goodix,resume-in-workqueue = <0>;
+      goodix,int-sync = <1>;
+      goodix,swap-x2y = <0>;
+      goodix,esd-protect = <1>;
+      goodix,auto-update = <1>;
+      goodix,auto-update-cfg = <1>;
+      goodix,power-off-sleep = <0>;
+      goodix,pen-suppress-finger = <0>;
+      goodix,devinfo = <0>;  /*0 = drg, 1 = ctl*/
+/*     goodix,cfg-group2 = [ //driver-send-cfg = <0> ==> cfg in dts is needless
+        43 20 03 00 05 0A 05 00 01 08 28
+        05 50 32 03 05 00 00 00 00 00 00
+        00 00 00 00 00 8C 2E 0E 59 5B 31
+        0D 31 0D 00 BB 33 1C 00 00 00 00
+        00 00 00 00 00 00 03 00 00 00 00
+        00 00 00 00 00 00 00 00 00 00 00
+        00 00 00 00 00 00 00 00 00 00 00
+        00 00 00 00 00 00 00 00 00 00 00
+        00 00 00 00 00 00 00 02 00 00 00
+        00 00 00 00 00 00 64 50 00 00 00
+        00 32 1C 1A 18 16 14 12 10 0E 0C
+        0A 08 06 04 02 02 0F 00 00 00 00
+        60 BB 00 00 00 19 1A 00 FF FF 14
+        13 12 10 0F 0C 0A 08 06 04 02 00
+        16 2A 29 28 26 24 22 21 20 1F 1E
+        1D 1C 18 FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF 6C 01
+    ];
+*/
+  };
+};

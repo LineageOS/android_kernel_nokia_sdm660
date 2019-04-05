@@ -281,6 +281,40 @@
 		};
 	};
 
+	//SW4-HL-Display-BringUpILI7807E-00+{_20170327
+	rpm-regulator-ldoa18 {
+		compatible = "qcom,rpm-smd-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <18>;
+		qcom,regulator-type = <0>;
+		status = "disabled";
+
+		regulator-l18 {
+			compatible = "qcom,rpm-smd-regulator";
+			regulator-name = "pm660_l18";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+	//SW4-HL-Display-BringUpILI7807E-00+}_20170327
+
+	//SW4-HL-Display-BringUpILI7807E-00+{_20170327
+	rpm-regulator-ldoa18 {
+		compatible = "qcom,rpm-smd-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <18>;
+		qcom,regulator-type = <0>;
+		status = "disabled";
+
+		regulator-l18 {
+			compatible = "qcom,rpm-smd-regulator";
+			regulator-name = "pm660_l18";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+	//SW4-HL-Display-BringUpILI7807E-00+}_20170327
+
 	rpm-regulator-ldoa19 {
 		compatible = "qcom,rpm-smd-regulator-resource";
 		qcom,resource-name = "ldoa";

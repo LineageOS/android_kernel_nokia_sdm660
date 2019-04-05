@@ -563,6 +563,14 @@ static int pd_send_msg(struct usbpd *pd, u8 msg_type, const u32 *data,
 	if (pd->hard_reset_recvd)
 		return -EBUSY;
 
+        //20170629 temp solution for C1N-1620 issue on 4601
+	/* if it's under hard reset, ignore any message deliver */ 
+	if (pd->hard_reset_recvd) {
+		usbpd_dbg(&pd->dev, "msg(%u) in hard reset\n", msg_type);
+		return 0;
+	}
+	//~20170629 temp solution for C1N-1620 issue on 4601
+
 	hdr = PD_MSG_HDR(msg_type, pd->current_dr, pd->current_pr,
 			pd->tx_msgid, num_data, pd->spec_rev);
 
@@ -1027,6 +1035,11 @@ static void usbpd_set_state(struct usbpd *pd, enum usbpd_state next_state)
 	switch (next_state) {
 	case PE_ERROR_RECOVERY: /* perform hard disconnect/reconnect */
 		pd->in_pr_swap = false;
+		//20170623 QC patch for C1N-1620
+		val.intval = 0;
+		power_supply_set_property(pd->usb_psy,
+				POWER_SUPPLY_PROP_PR_SWAP, &val);
+		//~20170623 QC patch for C1N-1620
 		pd->current_pr = PR_NONE;
 		set_power_role(pd, PR_NONE);
 		pd->typec_mode = POWER_SUPPLY_TYPEC_NONE;
@@ -1225,8 +1238,8 @@ static void usbpd_set_state(struct usbpd *pd, enum usbpd_state next_state)
 					ret);
 			break;
 		}
-
-		if (!val.intval || disable_usb_pd)
+		// add pd->typec_mode == POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY
+		if (!val.intval || disable_usb_pd || pd->typec_mode == POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY)
 			break;
 
 		/*
@@ -1920,6 +1933,11 @@ static void usbpd_sm(struct work_struct *w)
 		rx_msg_cleanup(pd);
 
 		power_supply_set_property(pd->usb_psy,
+		//20170623 QC patch for C1N-1620
+				POWER_SUPPLY_PROP_PR_SWAP, &val);
+
+		power_supply_set_property(pd->usb_psy,
+		//~20170623 QC patch for C1N-1620
 				POWER_SUPPLY_PROP_PD_IN_HARD_RESET, &val);
 
 		power_supply_set_property(pd->usb_psy,
@@ -2859,8 +2877,16 @@ static int psy_changed(struct notifier_block *nb, unsigned long evt, void *ptr)
 
 	/* Don't proceed if PE_START=0 as other props may still change */
 	if (!val.intval && !pd->pd_connected &&
-			typec_mode != POWER_SUPPLY_TYPEC_NONE)
-		return 0;
+			typec_mode != POWER_SUPPLY_TYPEC_NONE){
+		//HCLai workaround: Only FTM + FTM cable shouldn't	return 0
+		usbpd_err(&pd->dev, "val.intval = %d, typec_mode = %d \n", val.intval, typec_mode);
+		if((strstr(saved_command_line, "androidboot.mode=2")==NULL) ||
+			(typec_mode != POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY)){
+			return 0;
+		}
+		else
+			usbpd_err(&pd->dev, "[workaround]Only FTM + FTM cable shouldn't	return 0\n");
+	}
 
 	ret = power_supply_get_property(pd->usb_psy,
 			POWER_SUPPLY_PROP_PRESENT, &val);
@@ -2959,6 +2985,11 @@ static int psy_changed(struct notifier_block *nb, unsigned long evt, void *ptr)
 
 	case POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY:
 		usbpd_info(&pd->dev, "Type-C Debug Accessory connected\n");
+		if (pd->current_pr != PR_SINK) {
+			pd->current_pr = PR_SINK;
+			pd->psy_type = POWER_SUPPLY_TYPE_USB;
+			pd->vbus_present = 1;
+		}
 		break;
 	case POWER_SUPPLY_TYPEC_SINK_AUDIO_ADAPTER:
 		usbpd_info(&pd->dev, "Type-C Analog Audio Adapter connected\n");
@@ -3028,7 +3059,9 @@ static int usbpd_dr_set_property(struct dual_role_phy_instance *dual_role,
 {
 	struct usbpd *pd = dual_role_get_drvdata(dual_role);
 	bool do_swap = false;
+	/* FIH - akckwang - NB1-7876 - system_server_watchdog in setup wizard with usb */
 	int wait_count = 5;
+	/* end FIH - NB1-7876 */
 
 	if (!pd)
 		return -ENODEV;

@@ -1,0 +1,52 @@
+/* C1N preEVT SDM660 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v5.dtsi"
+
+/* SYSTEM parts */
+#include "common/system-preEVT-660.dtsi"
+
+/* Keypad parts */
+#include "misc/keypad.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "charger/b2n-charger-evt1.dtsi"
+#include "charger/b2n_smb1351_slave.dtsi"
+
+/* Audio */
+#include "audio/audio-EVT1.5.dtsi"
+
+/* Camera */
+#include "camera/camera-b2n-evt.dtsi"
+/* #include "camera/camera-evt.dtsi" */
+
+/* Haptic */
+//#include "misc/haptics.dtsi"
+#include "haptic/haptic_drv2605l.dtsi"
+/* SD */
+#include "misc/sd-evb.dtsi"
+
+/* Fingerprint */
+#include "fingerprint/fingerprint-gf3208-evt-b2n.dtsi"
+
+/* Sensor */
+#include "sensors/hallsensor-fih.dtsi"
+
+/* Touch */
+#include "touch/touch-focaltech8716-b2n.dtsi"
+#include "touch/touch-novatek-nt36xxx-b2n.dtsi"
+
+/* LCM */
+#include "display/dsi-panel-fih-ft8716u-fhd-video.dtsi"
+#include "display/dsi-panel-fih-nt36672-fhd-video.dtsi"
+#include "display/dsi-panel-fih-nt36672-h-glass-fhd-video.dtsi"
+#include "display/boost_converter_nt50356_i2c_0x11.dtsi"

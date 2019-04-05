@@ -1,0 +1,12 @@
+&soc {
+	gf5288 {
+		compatible = "goodix,fingerprint";
+		status = "okay";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0 72 0>;
+		fp-gpio-reset = <&tlmm 20 0x0>;
+		fp-gpio-irq = <&tlmm 72 0x0>;
+		goodix,key-customer-define = <1>;
+		vdd_io-supply = <&fp_avdd_vreg>;
+	};
+};

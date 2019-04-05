@@ -1,0 +1,71 @@
+qcom,PL2_3000mah_300k {
+	qcom, = <24>;
+	/* #3170543_FIH_PLT2xf_3000mAh_averaged_MasterSlave_Nov7th2017*/
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,nom-batt-capacity-mah = <3000>;
+	qcom,fastchg-current-ma = <3000>;
+	qcom,batt-id-kohm = <300>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "PL2_XF_3000mah_300k";
+	qcom,checksum = <0xEE2B>;
+	qcom,gui-version = "PM660GUI - 0.0.0.45";
+	qcom,fg-profile-data = [
+		 74 1F A9 05
+		 83 0A 2E 06
+		 75 1D 27 F5
+		 4A 12 25 14
+		 55 19 13 22
+		 34 3D 8B 4A
+		 52 00 00 00
+		 15 00 00 00
+		 00 00 9F C5
+		 33 CD 79 CA
+		 2B 00 08 00
+		 EB C3 0D E5
+		 21 FC 17 FA
+		 C1 FD 90 12
+		 97 EC 9F 2A
+		 22 06 09 20
+		 27 00 14 00
+		 B3 1F A0 05
+		 79 0A 8D FC
+		 70 1D 01 D3
+		 4F 0B A8 14
+		 EB 18 1C 23
+		 2F 45 78 53
+		 55 00 00 00
+		 0E 00 00 00
+		 00 00 2C CD
+		 4E C3 78 C5
+		 22 00 00 00
+		 D5 EA 0D E5
+		 29 FD 82 F2
+		 AD FD CF 01
+		 E3 F2 71 1A
+		 AE 33 CC FF
+		 07 10 00 00
+		 01 0C 66 46
+		 22 00 40 00
+		 AD 01 0A FA
+		 FF 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+	];
+};

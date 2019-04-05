@@ -22,6 +22,11 @@
 #include <linux/msm-bus.h>
 #include <linux/msm-bus-board.h>
 #include "mdss_mdp_pp_cache_config.h"
+#if defined(CONFIG_PXLW_IRIS3)
+#include "mdss_debug.h"
+#include "mdss_dsi_iris3.h"
+#endif
+
 
 struct mdp_csc_cfg mdp_csc_8bit_convert[MDSS_MDP_MAX_CSC] = {
 	[MDSS_MDP_CSC_YUV2RGB_601L] = {
@@ -168,6 +173,20 @@ struct mdp_csc_cfg mdp_csc_8bit_convert[MDSS_MDP_MAX_CSC] = {
 		{ 0x0, 0xff, 0x0, 0xff, 0x0, 0xff,},
 		{ 0x0, 0xff, 0x0, 0xff, 0x0, 0xff,},
 	},
+#if defined(CONFIG_PXLW_IRIS3)
+	[MDSS_MDP_CSC_YCoCg] = {
+		0,
+		{
+			0x0200, 0xff00, 0x0100,
+			0x0200, 0x0000, 0xff00,
+			0x0200, 0x0100, 0x0100,
+		},
+		{ 0x0, 0xff80, 0xff80,},
+		{ 0x0, 0x0, 0x0,},
+		{ 0x0, 0xff, 0x10, 0xf0, 0x10, 0xf0,},
+		{ 0x0,  0xff, 0x0,  0xff, 0x0,  0xff,},
+	},
+#endif
 };
 
 struct mdp_csc_cfg mdp_csc_10bit_convert[MDSS_MDP_MAX_CSC] = {
@@ -315,6 +334,20 @@ struct mdp_csc_cfg mdp_csc_10bit_convert[MDSS_MDP_MAX_CSC] = {
 		{ 0x0, 0x3ff, 0x0, 0x3ff, 0x0, 0x3ff,},
 		{ 0x0, 0x3ff, 0x0, 0x3ff, 0x0, 0x3ff,},
 	},
+#if defined(CONFIG_PXLW_IRIS3)
+	[MDSS_MDP_CSC_YCoCg] = {
+		0,
+		{
+			0x0200, 0xff00, 0x0100,
+			0x0200, 0x0000, 0xff00,
+			0x0200, 0x0100, 0x0100,
+		},
+		{ 0x0, 0xfe00, 0xfe00,},
+		{ 0x0, 0x0, 0x0,},
+		{ 0x0, 0x3ff, 0x40, 0x3c0, 0x40, 0x3c0,},
+		{ 0x0, 0x3ff,  0x0, 0x3ff,  0x0, 0x3ff,},
+	},
+#endif
 };
 
 static struct mdss_mdp_format_params dest_scaler_fmt = {
@@ -801,6 +834,94 @@ int mdss_mdp_csc_setup_data(u32 block, u32 blk_idx, struct mdp_csc_cfg *data)
 	return ret;
 }
 
+#if defined(CONFIG_PXLW_IRIS3)
+#define PIPE_MAX 16 // FIXME
+static bool csc_changed;
+static bool csc_vsync_req;
+struct mdp_sspp_csc_conf {
+	struct mdss_mdp_pipe *pipe;
+	struct mdp_csc_cfg *data;
+	u32 csc_type;
+	u32 block;
+} pipe_csc_conf[PIPE_MAX];
+
+void mdss_mdp_sspp_csc_setup_data(u32 block, struct mdss_mdp_pipe *pipe,
+				  struct mdp_csc_cfg *data)
+{
+	int i;
+	char __iomem *base, *addr;
+	u32 val = 0, lv_shift = 0;
+
+	if (block == MDSS_MDP_BLOCK_SSPP_10) {
+		lv_shift = CSC_10BIT_LV_SHIFT;
+		base = pipe->base + MDSS_MDP_REG_VIG_CSC_10_BASE;
+	} else {
+		lv_shift = CSC_8BIT_LV_SHIFT;
+		base = pipe->base + MDSS_MDP_REG_VIG_CSC_1_BASE;
+	}
+
+	addr = base + CSC_MV_OFF;
+	for (i = 0; i < 9; i++) {
+		if (i & 0x1) {
+			val |= data->csc_mv[i] << 16;
+			writel_relaxed_no_log(val, addr);
+			addr += sizeof(u32);
+		} else {
+			val = data->csc_mv[i];
+		}
+	}
+	writel_relaxed_no_log(val, addr); /* COEFF_33 */
+
+	addr = base + CSC_BV_OFF;
+	for (i = 0; i < 3; i++) {
+		writel_relaxed_no_log(data->csc_pre_bv[i], addr);
+		writel_relaxed_no_log(data->csc_post_bv[i], addr + CSC_POST_OFF);
+		addr += sizeof(u32);
+	}
+
+	addr = base + CSC_LV_OFF;
+	for (i = 0; i < 6; i += 2) {
+		val = (data->csc_pre_lv[i] << lv_shift) | data->csc_pre_lv[i+1];
+		writel_relaxed_no_log(val, addr);
+
+		val = (data->csc_post_lv[i] << lv_shift) |
+			data->csc_post_lv[i+1];
+		writel_relaxed_no_log(val, addr + CSC_POST_OFF);
+		addr += sizeof(u32);
+	}
+}
+
+static void mdss_mdp_csc_setup_handle_vsync(struct mdss_mdp_ctl *ctl,
+					    ktime_t t)
+{
+	int i;
+
+	pr_debug("handle vsync, csc_changed %d\n", csc_changed);
+	if (!csc_changed)
+		return;
+	ATRACE_BEGIN(__func__);
+	for (i = 0; i < PIPE_MAX; i++) {
+		if (pipe_csc_conf[i].pipe && pipe_csc_conf[i].data) {
+			pr_debug("set csc in vsync, pipe %u\n",
+				 pipe_csc_conf[i].pipe->num);
+			mdss_mdp_sspp_csc_setup_data(pipe_csc_conf[i].block,
+					pipe_csc_conf[i].pipe,
+					pipe_csc_conf[i].data);
+			pipe_csc_conf[i].pipe = NULL;
+			pipe_csc_conf[i].data = NULL;
+		}
+	}
+	csc_changed = false;
+	ATRACE_END(__func__);
+}
+
+static struct mdss_mdp_vsync_handler csc_vsync_handler = {
+	.vsync_handler = mdss_mdp_csc_setup_handle_vsync,
+	.cmd_post_flush = false,
+};
+extern void mdss_mdp_irq_lat_pm_qos_update_request(int val);
+#endif
+
 int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 csc_type)
 {
 	struct mdp_csc_cfg *data;
@@ -809,6 +930,10 @@ int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 csc_type)
 		pr_err("invalid csc matrix index %d\n", csc_type);
 		return -ERANGE;
 	}
+
+#if defined(CONFIG_PXLW_IRIS3)
+	csc_type = iris_get_csc_type(csc_type);
+#endif
 
 	pr_debug("csc type=%d blk=%d idx=%d\n", csc_type,
 		 block, blk_idx);
@@ -819,6 +944,49 @@ int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 csc_type)
 		data = &mdp_csc_8bit_convert[csc_type];
 	return mdss_mdp_csc_setup_data(block, blk_idx, data);
 }
+
+#if defined(CONFIG_PXLW_IRIS3)
+static int mdss_mdp_sspp_csc_setup(u32 block, struct mdss_mdp_pipe *pipe)
+{
+	struct mdp_csc_cfg *data;
+	u32 csc_type = iris_get_csc_type(pp_vig_csc_pipe_val(pipe));
+	if (csc_type >= MDSS_MDP_MAX_CSC) {
+		pr_err("invalid csc matrix index %d\n", csc_type);
+		return -ERANGE;
+	}
+
+	pr_debug("csc type=%d blk=%d pipe=%d\n", csc_type, block, pipe->num);
+	if (block == MDSS_MDP_BLOCK_SSPP_10)
+		data = &mdp_csc_10bit_convert[csc_type];
+	else
+		data = &mdp_csc_8bit_convert[csc_type];
+
+	if (pipe->num >= PIPE_MAX) {
+		pr_err("unexpected pipe num %d\n", pipe->num);
+		return -EINVAL;
+	}
+	ATRACE_BEGIN(__func__);
+	if (pipe_csc_conf[pipe->num].csc_type != csc_type) {
+		pipe_csc_conf[pipe->num].csc_type = csc_type;
+		pipe_csc_conf[pipe->num].data = data;
+		pipe_csc_conf[pipe->num].pipe = pipe;
+		pipe_csc_conf[pipe->num].block = block;
+		csc_changed = true;
+		pr_debug("csc changed\n");
+	}
+	ATRACE_END(__func__);
+	return 0;
+}
+
+void mdss_mdp_sspp_csc_reset(struct mdss_mdp_pipe *pipe)
+{
+	pr_debug("csc reset pipe %u\n", pipe->num);
+	if (pipe->num >= PIPE_MAX)
+		pr_err("unexpected pipe num %d\n", pipe->num);
+	else
+		pipe_csc_conf[pipe->num].csc_type = MDSS_MDP_MAX_CSC;
+}
+#endif
 
 static void pp_gamut_config(struct mdp_gamut_cfg_data *gamut_cfg,
 				char __iomem *base, struct pp_sts_type *pp_sts)
@@ -1136,8 +1304,16 @@ static int pp_vig_pipe_setup(struct mdss_mdp_pipe *pipe, u32 *op)
 	    IS_MDSS_MAJOR_MINOR_SAME(mdata->mdp_rev, MDSS_MDP_HW_REV_300)) {
 		if (pipe->src_fmt->is_yuv) {
 			/* TODO: check csc cfg from PP block */
+#if defined(CONFIG_PXLW_IRIS3)
+			if (iris_is_valid_cfg())
+				mdss_mdp_sspp_csc_setup(MDSS_MDP_BLOCK_SSPP_10, pipe);
+			else
+				mdss_mdp_csc_setup(MDSS_MDP_BLOCK_SSPP_10, pipe->num,
+					pp_vig_csc_pipe_val(pipe));
+#else
 			mdss_mdp_csc_setup(MDSS_MDP_BLOCK_SSPP_10, pipe->num,
 			pp_vig_csc_pipe_val(pipe));
+#endif
 			csc_op = ((0 << 2) |	/* DST_DATA=RGB */
 					  (1 << 1) |	/* SRC_DATA=YCBCR*/
 					  (1 << 0));	/* CSC_10_EN */
@@ -1169,9 +1345,37 @@ static int pp_vig_pipe_setup(struct mdss_mdp_pipe *pipe, u32 *op)
 		 * is a previously configured pipe need to re-configure
 		 * CSC matrix
 		 */
+#if defined(CONFIG_PXLW_IRIS3)
+		if (iris_is_valid_cfg())
+			mdss_mdp_sspp_csc_setup(MDSS_MDP_BLOCK_SSPP, pipe);
+		else
+			mdss_mdp_csc_setup(MDSS_MDP_BLOCK_SSPP, pipe->num,
+				pp_vig_csc_pipe_val(pipe));
+#else
 		mdss_mdp_csc_setup(MDSS_MDP_BLOCK_SSPP, pipe->num,
 			   pp_vig_csc_pipe_val(pipe));
+#endif
 	}
+
+#if defined(CONFIG_PXLW_IRIS3)
+	if (iris_is_valid_cfg()) {
+		pr_debug("csc_changed %d , csc_vsync_req %d\n", csc_changed, csc_vsync_req);
+		if (csc_changed && !csc_vsync_req) {
+			struct mdss_mdp_ctl *ctl = mfd_to_ctl(pipe->mfd);
+			mdss_mdp_irq_lat_pm_qos_update_request(10);
+			ctl->ops.add_vsync_handler(ctl, &csc_vsync_handler);
+			csc_vsync_req = true;
+			pr_debug("added csc vsync handler\n");
+		}
+		else if (!csc_changed && csc_vsync_req) {
+			struct mdss_mdp_ctl *ctl = mfd_to_ctl(pipe->mfd);
+			mdss_mdp_irq_lat_pm_qos_update_request(-1);
+			ctl->ops.remove_vsync_handler(ctl, &csc_vsync_handler);
+			csc_vsync_req = false;
+			pr_debug("removed csc vsync handler\n");
+		}
+	}
+#endif
 
 	/* Update CSC state only if tuning mode is enable */
 	if (dcm_state == DTM_ENTER) {
@@ -1345,10 +1549,25 @@ static int mdss_mdp_qseed2_setup(struct mdss_mdp_pipe *pipe)
 
 	mdss_mdp_pp_get_dcm_state(pipe, &dcm_state);
 
+#if defined(CONFIG_PXLW_IRIS3)
+	if (iris_is_valid_cfg()) {
+		if (mdata->mdp_rev >= MDSS_MDP_HW_REV_102 && pipe->src_fmt->is_yuv &&
+			!(pipe->src_fmt->chroma_sample == MDSS_MDP_CHROMA_420))
+			filter_mode = MDSS_MDP_SCALE_FILTER_CA;
+		else
+			filter_mode = MDSS_MDP_SCALE_FILTER_NEAREST;
+	} else {
+		if (mdata->mdp_rev >= MDSS_MDP_HW_REV_102 && pipe->src_fmt->is_yuv)
+			filter_mode = MDSS_MDP_SCALE_FILTER_CA;
+		else
+			filter_mode = MDSS_MDP_SCALE_FILTER_BIL;
+	}
+#else
 	if (mdata->mdp_rev >= MDSS_MDP_HW_REV_102 && pipe->src_fmt->is_yuv)
 		filter_mode = MDSS_MDP_SCALE_FILTER_CA;
 	else
 		filter_mode = MDSS_MDP_SCALE_FILTER_BIL;
+#endif
 
 	src_w = DECIMATED_DIMENSION(pipe->src.w, pipe->horz_deci);
 	src_h = DECIMATED_DIMENSION(pipe->src.h, pipe->vert_deci);
@@ -2353,7 +2572,6 @@ static int pp_dspp_setup(u32 disp_num, struct mdss_mdp_mixer *mixer,
 	u32 mixer_cnt;
 	u32 mixer_id[MDSS_MDP_INTF_MAX_LAYERMIXER];
 	int side;
-
 	opmode = *op_mode;
 
 	if (!mixer || !mixer->ctl || !mixer->ctl->mdata)
@@ -2408,6 +2626,22 @@ static int pp_dspp_setup(u32 disp_num, struct mdss_mdp_mixer *mixer,
 	} else {
 		ad_flags = 0;
 	}
+
+#if defined(CONFIG_PXLW_IRIS3)
+	if (iris_is_valid_cfg()) {
+		flags &= ~(PP_FLAGS_DIRTY_PA);
+		if (iris_pcc_set_config(&mdss_pp_res->pcc_disp_cfg[disp_num]) > 0)
+			flags |= PP_FLAGS_DIRTY_PCC;
+		flags &= ~(PP_FLAGS_DIRTY_IGC);
+		flags &= ~(PP_FLAGS_DIRTY_ENHIST);
+		flags &= ~(PP_FLAGS_DIRTY_DITHER);
+		flags &= ~(PP_FLAGS_DIRTY_GAMUT);
+		flags &= ~(PP_FLAGS_DIRTY_PGC);
+		flags &= ~(PP_FLAGS_DIRTY_PA_DITHER);
+
+		ad_hw = NULL;
+	}
+#endif
 
 	/* nothing to update */
 	if ((!flags) && (!(opmode)) && (!ad_flags))
@@ -3248,6 +3482,10 @@ int mdss_mdp_pp_init(struct device *dev)
 					MDSS_MDP_REG_VIG_HIST_CTL_BASE;
 			}
 		}
+#if defined(CONFIG_PXLW_IRIS3)
+		for (i = 0; i < PIPE_MAX; i++)
+			pipe_csc_conf[i].csc_type = MDSS_MDP_MAX_CSC;
+#endif
 	}
 	mutex_unlock(&mdss_pp_mutex);
 	return ret;

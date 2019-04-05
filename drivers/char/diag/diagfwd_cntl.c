@@ -454,7 +454,7 @@ static void process_incoming_feature_mask(uint8_t *buf, uint32_t len,
 	}
 
 	if (feature_mask_len > FEATURE_MASK_LEN) {
-		pr_alert("diag: Receiving feature mask length more than Apps support\n");
+		pr_err("diag: Receiving feature mask length more than Apps support\n");
 		feature_mask_len = FEATURE_MASK_LEN;
 	}
 

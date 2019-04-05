@@ -12,6 +12,16 @@
 
 #ifndef __STEP_CHG_H__
 #define __STEP_CHG_H__
+
+enum step_chg_cfg_idx {
+	STEP_CHG_CFG = 0,
+	JEITA_FCC_CFG,
+	JEITA_FV_CFG,
+};
+
 int qcom_step_chg_init(bool, bool);
 void qcom_step_chg_deinit(void);
+
+int fih_set_step_chg_cfg(int *cfg, int cfg_len, int mode);
+int fih_set_step_chg_hysteresis(int hysteresis, int mode);
 #endif /* __STEP_CHG_H__ */

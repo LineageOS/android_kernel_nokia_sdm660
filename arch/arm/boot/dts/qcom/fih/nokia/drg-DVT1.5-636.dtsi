@@ -1,0 +1,9 @@
+/* DRG DVT1.5 SDM636 */
+
+/* inherit preEVT Settings */
+#include "drg-EVT-636.dtsi"
+
+/* Diff */
+/* TP */
+#include "touch/touch-gt915l-ctc-drgch14.dtsi"
+

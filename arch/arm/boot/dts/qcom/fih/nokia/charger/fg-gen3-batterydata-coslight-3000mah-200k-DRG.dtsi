@@ -1,0 +1,71 @@
+qcom,DRG_3000mah_200k {
+	qcom, = <24>;
+	/* #3325277_FIH_HE342cos_3000mAh_averaged_MasterSlave_Feb13th2018*/
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,nom-batt-capacity-mah = <3000>;
+	qcom,fastchg-current-ma = <3000>;
+	qcom,batt-id-kohm = <200>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "DRG_coslight_3000mah_200k";
+	qcom,checksum = <0x1671>;
+	qcom,gui-version = "PM660GUI - 0.0.0.45";
+	qcom,fg-profile-data = [
+		 A3 1E C5 06
+		 05 03 53 07
+		 CE 1C 34 02
+		 39 0D 3C 0B
+		 03 18 85 23
+		 CC 44 01 5A
+		 66 00 00 00
+		 11 00 00 00
+		 00 00 9F B4
+		 3D C4 69 BA
+		 2A 00 08 00
+		 03 DB 59 E5
+		 20 05 99 FB
+		 D2 1D 87 0D
+		 3A 07 B9 32
+		 27 06 09 20
+		 27 00 14 00
+		 69 1F 0D 06
+		 0B 0A CB 06
+		 B8 1C 32 03
+		 BF 15 7B 12
+		 70 18 28 2A
+		 5A 4D 40 62
+		 64 00 00 00
+		 0C 00 00 00
+		 00 00 7D D5
+		 44 CA 17 CA
+		 1C 00 00 00
+		 CF E3 59 E5
+		 0A 06 0D 01
+		 EB FC CB FA
+		 9C 06 1B 22
+		 B1 33 CC FF
+		 07 10 00 00
+		 5B 0C 66 46
+		 1C 00 40 00
+		 C4 01 0A FA
+		 FF 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+	];
+};

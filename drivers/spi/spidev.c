@@ -155,6 +155,7 @@ spidev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
 	struct spidev_data	*spidev;
 	ssize_t			status = 0;
+	pr_err("wbl enter spidev_read + ");
 
 	/* chipselect only toggles at start or end of operation */
 	if (count > bufsiz)
@@ -174,6 +175,7 @@ spidev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 			status = status - missing;
 	}
 	mutex_unlock(&spidev->buf_lock);
+	pr_err("wbl enter spidev_read - ");
 
 	return status;
 }
@@ -186,6 +188,7 @@ spidev_write(struct file *filp, const char __user *buf,
 	struct spidev_data	*spidev;
 	ssize_t			status = 0;
 	unsigned long		missing;
+	pr_err("wbl enter spidev_write + ");
 
 	/* chipselect only toggles at start or end of operation */
 	if (count > bufsiz)
@@ -200,6 +203,7 @@ spidev_write(struct file *filp, const char __user *buf,
 	else
 		status = -EFAULT;
 	mutex_unlock(&spidev->buf_lock);
+	pr_err("wbl enter spidev_write - ");
 
 	return status;
 }
@@ -361,6 +365,7 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	u32			tmp;
 	unsigned		n_ioc;
 	struct spi_ioc_transfer	*ioc;
+	pr_err("wbl enter spidev_ioctl + \n");
 
 	/* Check type and command number */
 	if (_IOC_TYPE(cmd) != SPI_IOC_MAGIC)
@@ -397,12 +402,14 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	 *  - SPI_IOC_MESSAGE needs the buffer locked "normally".
 	 */
 	mutex_lock(&spidev->buf_lock);
+	pr_err("wbl enter spidev_ioctl cmd =%d \n",cmd);
 
 	switch (cmd) {
 	/* read requests */
 	case SPI_IOC_RD_MODE:
 		retval = __put_user(spi->mode & SPI_MODE_MASK,
 					(__u8 __user *)arg);
+		pr_err("wbl enter spidev_ioctl cmd =SPI_IOC_RD_MODE\n");
 		break;
 	case SPI_IOC_RD_MODE32:
 		retval = __put_user(spi->mode & SPI_MODE_MASK,
@@ -422,6 +429,7 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	/* write requests */
 	case SPI_IOC_WR_MODE:
 	case SPI_IOC_WR_MODE32:
+		pr_err("wbl enter spidev_ioctl cmd =SPI_IOC_WR_MODE\n");
 		if (cmd == SPI_IOC_WR_MODE)
 			retval = __get_user(tmp, (u8 __user *)arg);
 		else
@@ -491,10 +499,12 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	default:
 		/* segmented and/or full-duplex I/O request */
 		/* Check message and copy into scratch area */
+		pr_err("wbl enter spidev_ioctl cmd =default \n");
 		ioc = spidev_get_ioc_message(cmd,
 				(struct spi_ioc_transfer __user *)arg, &n_ioc);
 		if (IS_ERR(ioc)) {
 			retval = PTR_ERR(ioc);
+			pr_err("wbl enter spidev_ioctl cmd =IS_ERR 0 \n");
 			break;
 		}
 		if (!ioc)
@@ -502,9 +512,11 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 		/* translate to spi_message, execute */
 		retval = spidev_message(spidev, ioc, n_ioc);
+		pr_err("wbl enter spidev_ioctl cmd =spidev_message \n");
 		kfree(ioc);
 		break;
 	}
+	pr_err("wbl enter spidev_ioctl -\n");
 
 	mutex_unlock(&spidev->buf_lock);
 	spi_dev_put(spi);
@@ -710,7 +722,7 @@ static int spidev_probe(struct spi_device *spi)
 	struct spidev_data	*spidev;
 	int			status;
 	unsigned long		minor;
-
+	pr_err("wbl enter spidev_probe");
 	/*
 	 * spidev should never be referenced in DT without a specific
 	 * compatible string, it is a Linux implementation thing
@@ -747,6 +759,7 @@ static int spidev_probe(struct spi_device *spi)
 				    spidev, "spidev%d.%d",
 				    spi->master->bus_num, spi->chip_select);
 		status = PTR_ERR_OR_ZERO(dev);
+		pr_err("wbl enter spidev_probe num=%d\n",spi->master->bus_num);
 	} else {
 		dev_dbg(&spi->dev, "no minor number available!\n");
 		status = -ENODEV;
@@ -763,6 +776,7 @@ static int spidev_probe(struct spi_device *spi)
 		spi_set_drvdata(spi, spidev);
 	else
 		kfree(spidev);
+	pr_err("wbl enter spidev_probe status=%d \n",status);
 
 	return status;
 }
@@ -790,7 +804,7 @@ static int spidev_remove(struct spi_device *spi)
 
 static struct spi_driver spidev_spi_driver = {
 	.driver = {
-		.name =		"spidev",
+		.name =		"spidevtest",
 		.of_match_table = of_match_ptr(spidev_dt_ids),
 	},
 	.probe =	spidev_probe,
@@ -808,6 +822,7 @@ static struct spi_driver spidev_spi_driver = {
 static int __init spidev_init(void)
 {
 	int status;
+	pr_err("wbl enter spidev_init ");
 
 	/* Claim our 256 reserved device numbers.  Then register a class
 	 * that will key udev/mdev to add/remove /dev nodes.  Last, register
@@ -818,7 +833,7 @@ static int __init spidev_init(void)
 	if (status < 0)
 		return status;
 
-	spidev_class = class_create(THIS_MODULE, "spidev");
+	spidev_class = class_create(THIS_MODULE, "spidevwbl");
 	if (IS_ERR(spidev_class)) {
 		unregister_chrdev(SPIDEV_MAJOR, spidev_spi_driver.driver.name);
 		return PTR_ERR(spidev_class);
@@ -829,6 +844,7 @@ static int __init spidev_init(void)
 		class_destroy(spidev_class);
 		unregister_chrdev(SPIDEV_MAJOR, spidev_spi_driver.driver.name);
 	}
+	pr_err("wbl enter spidev_init - ");
 	return status;
 }
 module_init(spidev_init);

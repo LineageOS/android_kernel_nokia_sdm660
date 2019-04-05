@@ -35,7 +35,14 @@ static LIST_HEAD(clk_list);
 static DEFINE_MUTEX(clk_list_lock);
 
 static struct dentry *debugfs_base;
+
+//CORE-PK-SuspendLog-00*[
+#ifdef CONFIG_FIH_SUSPEND_RESUME_LOG
+static u32 debug_suspend = 0x1; /* Show clock info when suspend as default */
+#else
 static u32 debug_suspend;
+#endif
+//CORE-PK-SuspendLog-00*]
 
 static int clock_debug_rate_set(void *data, u64 val)
 {

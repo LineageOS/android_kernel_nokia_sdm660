@@ -38,6 +38,12 @@
 #include "mdss_mdp_wfd.h"
 #include "mdss_dsi_clk.h"
 
+#if defined(CONFIG_PXLW_IRIS3)
+#include "mdss_dsi_iris3_ioctl.h"
+#include "mdss_dsi_iris3_pq.h"
+#include "mdss_dsi_iris3.h"
+#endif
+
 #define VSYNC_PERIOD 16
 #define BORDERFILL_NDX	0x0BF000BF
 #define CHECK_BOUNDS(offset, size, max_size) \
@@ -1784,6 +1790,9 @@ static int mdss_mdp_commit_cb(enum mdp_commit_stage_type commit_stage,
 		mutex_unlock(&mdp5_data->ov_lock);
 		break;
 	case MDP_COMMIT_STAGE_READY_FOR_KICKOFF:
+#if defined(CONFIG_PXLW_IRIS3)
+		iris_hdr_csc_frame_ready();
+#endif
 		mutex_lock(&mdp5_data->ov_lock);
 		break;
 	default:
@@ -5556,7 +5565,14 @@ static int mdss_mdp_overlay_ioctl_handler(struct msm_fb_data_type *mfd,
 		}
 		ret = mdss_fb_set_panel_ppm(mfd, val);
 		break;
-
+#if defined(CONFIG_PXLW_IRIS3)
+	case MSMFB_IRIS_OPERATE_CONF:
+		ret = msmfb_iris_operate_conf(mfd, argp);
+		break;
+	case MSMFB_IRIS_OPERATE_TOOL:
+		ret = msmfb_iris_operate_tool(mfd, argp);
+		break;
+#endif
 	default:
 		break;
 	}
@@ -6647,6 +6663,10 @@ int mdss_mdp_overlay_init(struct msm_fb_data_type *mfd)
 
 	if (mdss_mdp_pp_overlay_init(mfd))
 		pr_warn("Failed to initialize pp overlay data.\n");
+
+#if defined(CONFIG_PXLW_IRIS3)
+	mdss_dsi_iris_init(mfd);
+#endif
 	return rc;
 init_fail:
 	kfree(mdp5_data);

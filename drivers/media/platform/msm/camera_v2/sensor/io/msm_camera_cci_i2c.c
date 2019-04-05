@@ -13,12 +13,15 @@
 #include <soc/qcom/camera2.h>
 #include "msm_camera_i2c.h"
 #include "msm_cci.h"
+#include "../fih_camera_bbs.h"  //add
 
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
 #define S_I2C_DBG(fmt, args...) pr_debug(fmt, ##args)
 #define MAX_I2C_ADDR_TYPE_SIZE (MSM_CAMERA_I2C_3B_ADDR + 1)
 #define MAX_I2C_DATA_TYPE_SIZE (MSM_CAMERA_I2C_SET_BYTE_WRITE_MASK_DATA + 1)
+
+extern void fih_camera_bbs_by_cci(int master,int sid,int error_code);//add
 
 int32_t msm_camera_cci_i2c_read(struct msm_camera_i2c_client *client,
 	uint32_t addr, uint16_t *data,
@@ -43,8 +46,12 @@ int32_t msm_camera_cci_i2c_read(struct msm_camera_i2c_client *client,
 	cci_ctrl.cfg.cci_i2c_read_cfg.num_byte = data_type;
 	rc = v4l2_subdev_call(client->cci_client->cci_subdev,
 			core, ioctl, VIDIOC_MSM_CCI_CFG, &cci_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+	fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_READ);
+#endif
 	if (rc < 0) {
 		pr_err("%s: line %d rc = %d\n", __func__, __LINE__, rc);
+		fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_READ);
 		return rc;
 	}
 	rc = cci_ctrl.status;
@@ -132,8 +139,12 @@ int32_t msm_camera_cci_i2c_write(struct msm_camera_i2c_client *client,
 	cci_ctrl.cfg.cci_i2c_write_cfg.size = 1;
 	rc = v4l2_subdev_call(client->cci_client->cci_subdev,
 			core, ioctl, VIDIOC_MSM_CCI_CFG, &cci_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+	fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE);
+#endif
 	if (rc < 0) {
 		pr_err("%s: line %d rc = %d\n", __func__, __LINE__, rc);
+		fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE);
 		return rc;
 	}
 	rc = cci_ctrl.status;
@@ -216,8 +227,12 @@ static int32_t msm_camera_cci_i2c_write_table_cmd(
 	cci_ctrl.cfg.cci_i2c_write_cfg.size = write_setting->size;
 	rc = v4l2_subdev_call(client->cci_client->cci_subdev,
 			core, ioctl, VIDIOC_MSM_CCI_CFG, &cci_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+	fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE_SEQ);
+#endif
 	if (rc < 0) {
 		pr_err("%s: line %d rc = %d\n", __func__, __LINE__, rc);
+		fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE_SEQ);
 		return rc;
 	}
 	rc = cci_ctrl.status;
@@ -333,8 +348,12 @@ int32_t msm_camera_cci_i2c_write_table_w_microdelay(
 	cci_ctrl.cfg.cci_i2c_write_cfg.size = write_setting->size;
 	rc = v4l2_subdev_call(client->cci_client->cci_subdev,
 			core, ioctl, VIDIOC_MSM_CCI_CFG, &cci_ctrl);
+#if FIH_CAMERA_BBS_DEBUG
+	fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE_SEQ);
+#endif
 	if (rc < 0) {
 		pr_err("%s: line %d rc = %d\n", __func__, __LINE__, rc);
+		fih_camera_bbs_by_cci(cci_ctrl.cci_info->cci_i2c_master,cci_ctrl.cci_info->sid, FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE_SEQ);
 		return rc;
 	}
 	rc = cci_ctrl.status;

@@ -1,0 +1,8 @@
+/* DRG EVT SDM636 */
+
+/* inherit preEVT Settings */
+#include "drg-preEVT-636.dtsi"
+
+/* Diff */
+/* audio */
+

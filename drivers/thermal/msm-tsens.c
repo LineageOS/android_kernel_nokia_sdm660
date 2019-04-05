@@ -866,6 +866,9 @@ static int tsens_tz_get_temp(struct thermal_zone_device *thermal,
 		return -EINVAL;
 
 	rc = msm_tsens_get_temp(tm_sensor->sensor_client_id, temp);
+	if (rc && (rc != -EPROBE_DEFER)) {
+		printk("BBox::UEC;22::7\n");
+	}
 	if (rc)
 		return rc;
 

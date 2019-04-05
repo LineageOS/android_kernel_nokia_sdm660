@@ -217,6 +217,10 @@ struct qpnp_lcdb {
 	struct bst_params		bst;
 	struct ldo_regulator		ldo;
 	struct ncp_regulator		ncp;
+
+	/* override */
+	bool				pwrup_pwrdn_ctl_override;
+	u8				pwrup_pwrdn_ctl;
 };
 
 struct settings {
@@ -1859,6 +1863,13 @@ static int qpnp_lcdb_parse_dt(struct qpnp_lcdb *lcdb)
 	if (lcdb->sc_irq < 0)
 		pr_debug("sc irq is not defined\n");
 
+	if (of_property_read_bool(node, "qcom,lcdb-pwrup-pwrdn-ctl-override")) {
+		lcdb->pwrup_pwrdn_ctl_override = true;
+		of_property_read_u8(node, "qcom,lcdb-pwrup-pwrdn-ctl", &lcdb->pwrup_pwrdn_ctl);
+	} else {
+		lcdb->pwrup_pwrdn_ctl_override = false;
+	}
+
 	return rc;
 }
 
@@ -1908,6 +1919,31 @@ static int qpnp_lcdb_regulator_probe(struct platform_device *pdev)
 		pr_info("LCDB module successfully registered! lcdb_en=%d ldo_voltage=%dmV ncp_voltage=%dmV bst_voltage=%dmV\n",
 			lcdb->lcdb_enabled, lcdb->ldo.voltage_mv,
 			lcdb->ncp.voltage_mv, lcdb->bst.voltage_mv);
+
+	if (lcdb->pwrup_pwrdn_ctl_override)
+	{
+		pr_debug("[ALAN] %s() set LCDB_PWRUP_PWRDN_CTL_REG = 0x%02x\n", __func__, lcdb->pwrup_pwrdn_ctl);
+		rc = qpnp_lcdb_secure_write(lcdb, lcdb->base + LCDB_PWRUP_PWRDN_CTL_REG, lcdb->pwrup_pwrdn_ctl);
+		if (rc < 0) {
+			pr_err("Failed to set PWRUP_PWRDN_CTL rc=%d\n", rc);
+			return rc;
+		}
+
+		rc = qpnp_lcdb_masked_write(lcdb, lcdb->base + LCDB_BST_OUTPUT_VOLTAGE_REG, SET_OUTPUT_VOLTAGE_MASK, 0x17); /* 0x17 = 5.85V */
+		if (rc < 0) {
+			pr_err("Failed to set LCDB BST 5.85V rc=%d\n", rc);
+		}
+
+		rc = qpnp_lcdb_masked_write(lcdb, lcdb->base + LCDB_LDO_OUTPUT_VOLTAGE_REG, SET_OUTPUT_VOLTAGE_MASK, 0x1B); /* 0x1B = 5.8V */
+		if (rc < 0) {
+			pr_err("Failed to set LCDB LDO 5.8V rc=%d\n", rc);
+		}
+
+		rc = qpnp_lcdb_masked_write(lcdb, lcdb->base + LCDB_NCP_OUTPUT_VOLTAGE_REG, SET_OUTPUT_VOLTAGE_MASK, 0x1B); /* 0x1B = 5.8V */
+		if (rc < 0) {
+			pr_err("Failed to set LCDB NCP 5.8V rc=%d\n", rc);
+		}
+	}
 
 	return rc;
 }

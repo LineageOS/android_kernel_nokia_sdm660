@@ -29,6 +29,8 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/exception.h>
 
+#include "../drivers/fih/fih_rere.h"
+
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
 
@@ -80,6 +82,11 @@ void panic(const char *fmt, ...)
 	va_list args;
 	long i, i_next = 0;
 	int state = 0;
+
+	/* FIH, to support fih apr { */
+	fih_rere_wt_imem(FIH_RERE_KERNEL_PANIC);
+	pr_info("%s: rere = 0x%08x\n", __func__, fih_rere_rd_imem());
+	/* FIH, to support fih apr } */
 
 	trace_kernel_panic(0);
 

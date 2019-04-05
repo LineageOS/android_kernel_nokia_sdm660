@@ -1,0 +1,59 @@
+
+#ifndef _FIH_BBS_CAMERA_H_
+#define _FIH_BBS_CAMERA_H_
+
+/****************************************************************************
+*                               Include File                                *
+****************************************************************************/
+
+/****************************************************************************
+*                         Public Constant Definition                        *
+****************************************************************************/
+#define FIH_CAMERA_BBS_DEBUG 0
+
+enum FIH_BBS_CAMERA_LOCATION
+{
+    FIH_BBS_CAMERA_LOCATION_MAIN,
+    FIH_BBS_CAMERA_LOCATION_FRONT,
+    FIH_BBS_CAMERA_LOCATION_SUB,
+    FIH_BBS_CAMERA_LOCATION_MAX,
+};
+
+enum FIH_BBS_CAMERA_MODULE
+{
+    FIH_BBS_CAMERA_MODULE_IC,
+    FIH_BBS_CAMERA_MODULE_ACTUATOR,
+    FIH_BBS_CAMERA_MODULE_EEPROM,
+    FIH_BBS_CAMERA_MODULE_OIS,
+    FIH_BBS_CAMERA_MODULE_MAX,
+};
+
+enum FIH_BBS_CAMERA_ERRORCODE
+{
+    FIH_BBS_CAMERA_ERRORCODE_POWER_UP,
+    FIH_BBS_CAMERA_ERRORCODE_POWER_DW,
+    FIH_BBS_CAMERA_ERRORCODE_MCLK_ERR,
+    FIH_BBS_CAMERA_ERRORCODE_I2C_READ,
+    FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE,
+    FIH_BBS_CAMERA_ERRORCODE_I2C_WRITE_SEQ,
+    FIH_BBS_CAMERA_ERRORCODE_UNKOWN,
+    FIH_BBS_CAMERA_ERRORCODE_MAX=255,
+};
+
+#define FIH_BBSUEC_MAIN_CAM_ID 9
+#define FIH_BBSUEC_FRONT_CAM_ID 44
+#define FIH_BBSUEC_AUX_CAM_ID 98 //temp
+
+enum FIH_BBSUEC_CAMERA_ERRORCODE
+{
+    FIH_BBSUEC_CAMERA_ERRORCODE_SENSOR_I2C = 1,
+    FIH_BBSUEC_CAMERA_ERRORCODE_SENSOR_POWER = 10,
+    FIH_BBSUEC_CAMERA_ERRORCODE_ACTUATOR_POWER,
+    FIH_BBSUEC_CAMERA_ERRORCODE_ACTUATOR_I2C,
+    FIH_BBSUEC_CAMERA_ERRORCODE_EEPROM_I2C,
+    FIH_BBSUEC_CAMERA_ERRORCODE_EEPROM_POWER,
+    FIH_BBSUEC_CAMERA_ERRORCODE_OIS_I2C,
+    FIH_BBSUEC_CAMERA_ERRORCODE_OIS_POWER,
+};
+
+#endif

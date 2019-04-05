@@ -49,6 +49,7 @@
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
 #endif
+#include <linux/miscdevice.h>
 
 MODULE_DESCRIPTION("Diag Char Driver");
 MODULE_LICENSE("GPL v2");
@@ -172,6 +173,7 @@ void *diag_ipc_log;
 #endif
 
 static void diag_md_session_close(int pid);
+
 
 /*
  * Returns the next delayed rsp id. If wrapping is enabled,
@@ -2897,7 +2899,6 @@ static int diag_user_process_raw_data(const char __user *buf, int len)
 		pr_err("diag: copy failed for user space data\n");
 		goto fail;
 	}
-
 	/* Check for proc_type */
 	if (len >= sizeof(int))
 		remote_proc = diag_get_remote(*(int *)user_space_data);
@@ -3496,6 +3497,147 @@ static ssize_t diagchar_write(struct file *file, const char __user *buf,
 	return err;
 }
 
+static ssize_t diagtest_write(struct file *file, const char __user *buf,
+			      size_t count, loff_t *ppos)
+{
+	int err = 0;
+	int pkt_type = 0;
+	int payload_len = 0;
+	const char __user *payload_buf = NULL;
+	int j = 0;
+	printk(KERN_DEBUG"diagtest_write count:%zu,buf:", count);
+	for (j = 0; j < count; j++) {
+	//	printk(KERN_DEBUG "%x ", buf[j]);
+	}
+	printk(KERN_DEBUG "\n");
+	/*
+	 * The data coming from the user sapce should at least have the
+	 * packet type heeader.
+	 */
+	if (count < sizeof(int)) {
+		pr_err("diag: In %s, client is sending short data, len: %d\n",
+		       __func__, (int)count);
+		return -EBADMSG;
+	}
+
+	err = copy_from_user((&pkt_type), buf, sizeof(int));
+
+#if 0
+	if (driver->logging_mode == DIAG_USB_MODE && !driver->usb_connected) {
+		if (!((pkt_type == DCI_DATA_TYPE) ||
+		    (pkt_type == DCI_PKT_TYPE) ||
+		    (pkt_type & DATA_TYPE_DCI_LOG) ||
+		    (pkt_type & DATA_TYPE_DCI_EVENT))) {
+			pr_debug("diag: In %s, Dropping non DCI packet type\n",
+				 __func__);
+			return -EIO;
+		}
+	}
+#endif
+	payload_buf = buf + sizeof(int);
+	payload_len = count - sizeof(int);
+
+	if (pkt_type == DCI_PKT_TYPE)
+		return diag_user_process_dci_apps_data(payload_buf,
+						       payload_len,
+						       pkt_type);
+	else if (pkt_type == DCI_DATA_TYPE)
+		return diag_user_process_dci_data(payload_buf, payload_len);
+	else if (pkt_type == USER_SPACE_RAW_DATA_TYPE){
+		return (err=diag_user_process_raw_data(payload_buf,
+							    payload_len))?err:count;
+	}
+	else if (pkt_type == USER_SPACE_DATA_TYPE)
+		return diag_user_process_userspace_data(payload_buf,
+							payload_len);
+	if (pkt_type & (DATA_TYPE_DCI_LOG | DATA_TYPE_DCI_EVENT)) {
+		err = diag_user_process_dci_apps_data(payload_buf, payload_len,
+						      pkt_type);
+		if (pkt_type & DATA_TYPE_DCI_LOG)
+			pkt_type ^= DATA_TYPE_DCI_LOG;
+		if (pkt_type & DATA_TYPE_DCI_EVENT)
+			pkt_type ^= DATA_TYPE_DCI_EVENT;
+		/*
+		 * Check if the log or event is selected even on the regular
+		 * stream. If USB is not connected and we are not in memory
+		 * device mode, we should not process these logs/events.
+		 */
+#if 0
+		if (pkt_type && driver->logging_mode == DIAG_USB_MODE &&
+		    !driver->usb_connected)
+			return err;
+#endif
+	}
+
+	switch (pkt_type) {
+	case DATA_TYPE_EVENT:
+	case DATA_TYPE_F3:
+	case DATA_TYPE_LOG:
+	case DATA_TYPE_DELAYED_RESPONSE:
+	case DATA_TYPE_RESPONSE:
+		return diag_user_process_apps_data(payload_buf, payload_len,
+						   pkt_type);
+	default:
+		pr_err_ratelimited("diag: In %s, invalid pkt_type: %d\n",
+				   __func__, pkt_type);
+		return -EINVAL;
+	}
+
+	return err;
+}
+
+static ssize_t diagtest_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+	printk(KERN_DEBUG"diagtest_read count");
+	return 0;
+}
+
+//int old_mask;
+static int diagtest_open(struct inode *inode, struct file *file)
+{
+//    int i=0;
+//    old_mask = driver->logging_mask;
+//    driver->logging_mask = 0;
+    printk(KERN_DEBUG"diagtest_open driver->logging_mask = %x\n",driver->logging_mask);
+//    for (i = 0; i < NUM_PERIPHERALS; i++) {
+//        diagfwd_open(i, TYPE_DATA);
+//        diagfwd_open(i, TYPE_CMD);
+//    }
+    diagtest_mux_open(0,DIAG_USB_MODE);
+    return 0;
+}
+
+static int diagtest_release(struct inode *inode, struct file *file)
+{
+//    int i=0;
+//    driver->logging_mask = old_mask;
+    printk(KERN_DEBUG"diagtest_release\n");
+//    for (i = 0; i < NUM_PERIPHERALS; i++) {
+//        diagfwd_close(i, TYPE_DATA);
+//        diagfwd_close(i, TYPE_CMD);
+//    }
+    diagtest_mux_close(0,DIAG_USB_MODE);
+    return 0;
+}
+
+static const struct file_operations diagsmdfops = {
+       .owner = THIS_MODULE,
+       .read = diagtest_read,
+       .write = diagtest_write,
+       .open = diagtest_open,
+       .release = diagtest_release
+       /*.read = diagchar_read,
+       .write = diagtest_write,
+       .open = diagchar_open,
+       .release = diagchar_close*/
+};
+
+struct miscdevice diagtest = {
+       .minor = MISC_DYNAMIC_MINOR,
+       .name = "diagtest",
+       .fops = &diagsmdfops,
+};
+
 void diag_ws_init()
 {
 	driver->dci_ws.ref_count = 0;
@@ -4000,6 +4142,8 @@ static int __init diagchar_init(void)
 	error = diagchar_setup_cdev(dev);
 	if (error)
 		goto fail;
+
+	misc_register(&diagtest);
 
 	pr_debug("diagchar initialized now");
 	platform_driver_register(&diag_mhi_driver);

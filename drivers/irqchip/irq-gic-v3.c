@@ -441,8 +441,13 @@ static void gic_show_resume_irq(struct gic_chip_data *gic)
 			name = "stray irq";
 		else if (desc->action && desc->action->name)
 			name = desc->action->name;
-
+		//CORE-PK-SuspendLog-00+[
+		#ifdef CONFIG_FIH_SUSPEND_RESUME_LOG
+		pr_warn("[PM] %s: %d triggered %s\n", __func__, irq, name);
+		#else
 		pr_warn("%s: %d triggered %s\n", __func__, irq, name);
+		#endif
+		//CORE-PK-SuspendLog-00+]
 	}
 }
 

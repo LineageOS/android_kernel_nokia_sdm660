@@ -1,0 +1,51 @@
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
+/dts-v1/;
+
+#include "sdm630.dtsi"
+#include "sdm630-mtp.dtsi"
+#include "sdm660-internal-codec-c1n.dtsi"
+#include "fih/nokia/c1n-EVT2.1-630.dtsi"
+/ {
+	model = "Qualcomm Technologies, Inc. SDM 630 PM660 + PM660L MTP, C1N EVT 2.1";
+	compatible = "qcom,sdm630-mtp", "qcom,sdm630", "qcom,mtp";
+	qcom,board-id = <8 0>;
+	qcom,pmic-id = <0x0001001b 0x0101011a 0x0 0x0>,
+			<0x0001001b 0x0201011a 0x0 0x0>;
+	fih,hw-id = <2 1 2>;
+};
+
+&int_codec {
+  qcom,model = "sdm660-snd-card-c1n-A";
+  qcom,audio-routing =
+  "RX_BIAS", "INT_MCLK0",
+  "SPK_RX_BIAS", "INT_MCLK0",
+  "INT_LDO_H", "INT_MCLK0",
+  "RX_I2S_CLK", "INT_MCLK0",
+  "TX_I2S_CLK", "INT_MCLK0",
+  "MIC BIAS Internal2", "Headset Mic",
+  "AMIC2", "MIC BIAS Internal2",
+  "MIC BIAS External", "Handset Mic",
+  "AMIC1", "MIC BIAS External",
+  "MIC BIAS External", "Secondary Mic",
+  "AMIC3", "MIC BIAS External",
+
+  "PDM_IN_RX1", "PDM_OUT_RX1",
+  "PDM_IN_RX2", "PDM_OUT_RX2",
+  "PDM_IN_RX3", "PDM_OUT_RX3",
+  "ADC1_IN", "ADC1_OUT",
+  "ADC2_IN", "ADC2_OUT",
+  "ADC3_IN", "ADC3_OUT";
+};
+

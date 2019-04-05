@@ -1,0 +1,22 @@
+&i2c_6{
+	status = "okay";
+
+	sec-nfc@27{
+			compatible = "samsung,sec-nfc";
+			reg = <0x27>;
+
+			sec-nfc,irq-gpio = <&tlmm 28 0x00>;
+			sec-nfc,ven-gpio = <&tlmm 29 0x00>;
+			sec-nfc,firm-gpio = <&tlmm 30 0x00>;
+			sec-nfc,clk_req-gpio = <&pm660_gpios 4 0x00>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <28 0>;
+			interrupt-names = "nfc_irq";
+			pinctrl-names = "nfc_active", "nfc_suspend";
+			pinctrl-0 = <&nfc_int_active &nfc_enable_active>;
+			pinctrl-1 = <&nfc_int_suspend &nfc_enable_suspend>;
+			clocks = <&clock_rpmcc RPM_LN_BB_CLK3_PIN>;
+			clock-names = "ref_clk";
+		};
+
+};

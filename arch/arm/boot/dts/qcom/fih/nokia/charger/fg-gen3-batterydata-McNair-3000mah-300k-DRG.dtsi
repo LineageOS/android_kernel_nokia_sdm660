@@ -1,0 +1,71 @@
+qcom,DRG_3000mah_300k {
+	qcom, = <24>;
+	/* #3477223_FIH_HE361mc_3060mAh_averaged_MasterSlave_Jul9th2018*/
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,nom-batt-capacity-mah = <3060>;
+	qcom,fastchg-current-ma = <3000>;
+	qcom,batt-id-kohm = <300>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "DRG_McNair_3000mah_300k";
+	qcom,checksum = <0xDF92>;
+	qcom,gui-version = "PM660GUI - 0.0.0.45";
+	qcom,fg-profile-data = [
+		 14 1F 35 06
+		 F5 03 AD FD
+		 D5 1C 0F 02
+		 95 0D C6 0A
+		 27 18 89 23
+		 AF 44 23 5A
+		 70 00 00 00
+		 10 00 00 00
+		 00 00 03 00
+		 8F CC 08 B5
+		 24 00 08 00
+		 A4 E2 54 E4
+		 F7 05 55 FA
+		 75 FD 57 12
+		 E2 05 4F 3A
+		 1F 06 09 20
+		 27 00 14 00
+		 8F 1F D7 05
+		 43 0A 87 06
+		 C3 1C 1A 03
+		 D5 15 65 12
+		 87 18 0E 2A
+		 94 4D F5 5B
+		 66 00 00 00
+		 0D 00 00 00
+		 00 00 31 D5
+		 9A CA 4B CA
+		 1B 00 00 00
+		 5C EA 54 E4
+		 2B FD CD F2
+		 69 DA AB 0A
+		 87 00 F8 1B
+		 B6 33 CC FF
+		 07 10 00 00
+		 3D 0C 66 46
+		 1B 00 40 00
+		 D4 01 0A FA
+		 FF 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+	];
+};
