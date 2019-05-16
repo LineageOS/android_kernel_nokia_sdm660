@@ -167,7 +167,7 @@
 		qcom,mdss-dsi-cabc-ui-command-state = "dsi_hs_mode";
 		qcom,mdss-dsi-cabc-still-command-state = "dsi_hs_mode";
 		qcom,mdss-dsi-cabc-moving-command-state = "dsi_hs_mode";
-		/* SW4-HL-Display-ImplementCECTCABC-00+}
+		/* SW4-HL-Display-ImplementCECTCABC-00+} */
 
 		/* SW4-HL-Display-SendCECTCABCBeforeInit-00+{_20161213 */
 		qcom,mdss-dsi-ce-on-command-BeforeInit = [
@@ -234,7 +234,7 @@
 		qcom,mdss-dsi-cabc-ui-command-BeforeInit-state = "dsi_lp_mode";
 		qcom,mdss-dsi-cabc-still-command-BeforeInit-state = "dsi_lp_mode";
 		qcom,mdss-dsi-cabc-moving-command-BeforeInit-state = "dsi_lp_mode";
-		/* SW4-HL-Display-SendCECTCABCBeforeInit-00+}
+		/* SW4-HL-Display-SendCECTCABCBeforeInit-00+} */
 
 		/* SW4-HL-Display-EliminateMostDsiError-00+{_20170216 */
 		qcom,mdss-dsi-tx-eot-append;
