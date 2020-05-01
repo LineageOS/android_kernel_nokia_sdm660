@@ -80,7 +80,7 @@ static int fih_cpu_read_show(struct seq_file *m, void *v)
 	sprintf(buf, "-%d", featureid);
 	strcat(msg, buf);
 
-	sprintf(buf, "(%d), ", pbl_patch_ver);
+	snprintf(buf, sizeof(buf), "(%d), ", pbl_patch_ver);
 	strcat(msg, buf);
 
 	switch (sample_type) {
