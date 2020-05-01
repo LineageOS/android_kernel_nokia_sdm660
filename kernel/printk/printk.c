@@ -500,10 +500,10 @@ int dmesg_restrict = IS_ENABLED(CONFIG_SECURITY_DMESG_RESTRICT);
 
 static int syslog_action_restricted(int type)
 {
-    /* for BBS start */
-    if (type == SYSLOG_ACTION_GET_KERNEL_BUFFER)
-        return 0;
-    /* for BBS end */
+	/* for BBS start */
+	if (type == SYSLOG_ACTION_GET_KERNEL_BUFFER)
+	return 0;
+	/* for BBS end */
 	if (dmesg_restrict)
 		return 1;
 	/*
