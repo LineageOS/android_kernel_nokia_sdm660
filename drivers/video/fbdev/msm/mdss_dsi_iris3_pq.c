@@ -581,12 +581,12 @@ void iris_cm_color_temp_set(void)
 		return;
 
 	/*if(pqlt_cur_setting->pq_setting.cmcolorgamut == 0) {*/
-		iris_init_ipopt_ip(popt,  IP_OPT_MAX);
-		len = iris_capture_disable_pq(popt, &skiplast);
-		len = iris_cm_ratio_set(popt, skiplast);
+	iris_init_ipopt_ip(popt,  IP_OPT_MAX);
+	len = iris_capture_disable_pq(popt, &skiplast);
+	len = iris_cm_ratio_set(popt, skiplast);
 
-		len = iris_capture_enable_pq(popt, len);
-		iris_update_pq_opt(popt, len);
+	len = iris_capture_enable_pq(popt, len);
+	iris_update_pq_opt(popt, len);
 	/*}*/
 	pr_info("%s, len = %d\n",  __func__, len);
 }
