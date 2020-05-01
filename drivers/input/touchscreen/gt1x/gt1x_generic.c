@@ -941,7 +941,7 @@ s32 gt1x_read_version(struct gt1x_version_info * ver_info)
 	GTP_INFO("IC VERSION:GT%s_%06X(Patch)_%04X(Mask)_%02X(SensorID)", product_id, patch_id, mask_id >> 8, sensor_id);
 	
 	//Snow add for touch firmware version
-    snprintf(fih_touch_hlt, PAGE_SIZE, "GT%s-%06X\n", product_id, patch_id);
+    snprintf(fih_touch_hlt, sizeof(fih_touch_hlt), "GT%s-%06X\n", product_id, patch_id);
 	fih_info_set_touch(fih_touch_hlt);
 	//Snow add for touch firmware version
 
