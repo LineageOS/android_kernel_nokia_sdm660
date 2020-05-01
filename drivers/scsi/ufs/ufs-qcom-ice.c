@@ -225,9 +225,9 @@ int ufs_qcom_ice_init(struct ufs_qcom_host *qcom_host)
 		qcom_host->ice.state = UFS_QCOM_ICE_STATE_ACTIVE;
 	}
 
-    qcom_ice_workqueue = alloc_workqueue("qcom_ice",
+	qcom_ice_workqueue = alloc_workqueue("qcom_ice",
                         WQ_MEM_RECLAIM | WQ_HIGHPRI, 0);
-    if (!qcom_ice_workqueue)
+	if (!qcom_ice_workqueue)
         panic("Failed to create qcom ice workqueue\n");
 
 	qcom_host->dbg_print_en |= UFS_QCOM_ICE_DEFAULT_DBG_PRINT_EN;
