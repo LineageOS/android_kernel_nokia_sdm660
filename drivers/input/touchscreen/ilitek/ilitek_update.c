@@ -382,7 +382,7 @@ Retry:
 		return -1;
 	}
 	//Win add for touch firmware version
-	snprintf(fih_touch_ilitek, PAGE_SIZE, "ilitek-V%d%d%d%02d\n", buf[0], buf[1], buf[2], buf[3]);
+	snprintf(fih_touch_ilitek, sizeof(fih_touch_ilitek), "ilitek-V%d%d%d%02d\n", buf[0], buf[1], buf[2], buf[3]);
 	#if PLATFORM_FUN == PLATFORM_D1C
 	fih_info_set_touch(fih_touch_ilitek);
 	//Win add for touch firmware version
