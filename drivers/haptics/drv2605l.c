@@ -1172,12 +1172,12 @@ static int drv2605L_parse_dt(struct device *dev,
 
 	if(use_enable)
 		pDrv2605Platdata->GpioEnable = of_get_named_gpio_flags(np, "ti,enable-gpio", 0, NULL);
-  else
-  	pDrv2605Platdata->GpioEnable = 0;
+	else
+		pDrv2605Platdata->GpioEnable = 0;
 
 	dev_err(dev, "%s: dts: ti,enable-gpio=%d \n", __func__, pDrv2605Platdata->GpioEnable);
 
-  use_trigger = of_property_read_bool(np, "ti,use-interrupt");
+	use_trigger = of_property_read_bool(np, "ti,use-interrupt");
 
 	if(use_trigger)
 		pDrv2605Platdata->GpioTrigger = of_get_named_gpio_flags(np, "ti,trigger-gpio", 0, NULL);
