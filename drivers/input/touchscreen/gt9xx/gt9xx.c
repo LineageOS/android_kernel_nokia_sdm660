@@ -1468,13 +1468,13 @@ s32 fih_gtp_read_version(struct i2c_client *client, u16* version)
     }
     dev_err(&client->dev, "FIH IC Config Version: %d\n", buf_a[2]);
     if(fw_info->sensor_id == TRULY_ID){
-        snprintf(fih_touch_gt9xx, PAGE_SIZE, "Goodix-V%02x%02x-T%d\n", buf[7], buf[6], buf_a[2]);
+        snprintf(fih_touch_gt9xx, sizeof(fih_touch_gt9xx), "Goodix-V%02x%02x-T%d\n", buf[7], buf[6], buf_a[2]);
     }else if(fw_info->sensor_id == HLT_ID){
-        snprintf(fih_touch_gt9xx, PAGE_SIZE, "Goodix-V%02x%02x-H%d\n", buf[7], buf[6], buf_a[2]);
+        snprintf(fih_touch_gt9xx, sizeof(fih_touch_gt9xx), "Goodix-V%02x%02x-H%d\n", buf[7], buf[6], buf_a[2]);
     }else if(fw_info->sensor_id == OFILM_ID){
-        snprintf(fih_touch_gt9xx, PAGE_SIZE, "Goodix-V%02x%02x-M%d\n", buf[7], buf[6], buf_a[2]);
+        snprintf(fih_touch_gt9xx, sizeof(fih_touch_gt9xx), "Goodix-V%02x%02x-M%d\n", buf[7], buf[6], buf_a[2]);
     }else {
-        snprintf(fih_touch_gt9xx, PAGE_SIZE, "Goodix-V%02x%02x-%d\n", buf[7], buf[6], buf_a[2]);
+        snprintf(fih_touch_gt9xx, sizeof(fih_touch_gt9xx), "Goodix-V%02x%02x-%d\n", buf[7], buf[6], buf_a[2]);
     }
     fih_info_set_touch(fih_touch_gt9xx);
 
