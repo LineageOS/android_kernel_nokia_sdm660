@@ -1386,7 +1386,7 @@ static s32 _save_test_result_data(char *save_test_data_dir, int test_types, u8 *
 				}
 				if (shortresult[2 + index * 4] & 0x80) {
 
-					bytes += (s32) sprintf((char *)&data[bytes], "Drv%d 之间短路", shortresult[2 + index * 4] & 0x7F);
+					bytes += (s32) sprintf((char *)&data[bytes], "Short circuit between Drv%d", shortresult[2 + index * 4] & 0x7F);
 
 				}
 
@@ -1394,13 +1394,13 @@ static s32 _save_test_result_data(char *save_test_data_dir, int test_types, u8 *
 
 					if (shortresult[2 + index * 4] == (sys.max_driver_num + 1)) {
 
-						bytes += (s32) sprintf((char *)&data[bytes], "GND\\VDD 之间短路");
+						bytes += (s32) sprintf((char *)&data[bytes], "Short circuit between GND\\VDD");
 
 					}
 
 					else {
 
-						bytes += (s32) sprintf((char *)&data[bytes], "Sen%d 之间短路", shortresult[2 + index * 4] & 0x7F);
+						bytes += (s32) sprintf((char *)&data[bytes], "Short circuit between Sen%d", shortresult[2 + index * 4] & 0x7F);
 
 					}
 				}
