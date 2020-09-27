@@ -1,0 +1,130 @@
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&slim_aud {
+  status = "disabled";
+};
+
+&dai_slim {
+  status = "disabled";
+};
+
+&wcd9335 {
+  status = "disabled";
+};
+
+&wcd934x_cdc {
+  status = "disabled";
+};
+
+&clock_audio {
+  status = "disabled";
+};
+
+&wcd_rst_gpio {
+  status = "disabled";
+};
+
+&wcd9xxx_intc {
+  status = "disabled";
+};
+
+&tasha_snd {
+  status = "disabled";
+};
+
+&tavil_snd {
+  status = "disabled";
+};
+
+&spi_7 {
+  status = "disabled";
+};
+
+&wdsp_mgr {
+  status = "disabled";
+};
+
+&wdsp_glink {
+  status = "disabled";
+};
+
+&glink_spi_xprt_wdsp {
+  status = "disabled";
+};
+
+&glink_fifo_wdsp {
+  status = "disabled";
+};
+
+&glink_qos_wdsp {
+  status = "disabled";
+};
+
+&int_codec {
+  status = "okay";
+  qcom,wsa-disable;
+  qcom,msm-hs-micbias-type = "internal";
+  qcom,model = "sdm660-snd-card-c1n";
+  /delete-property/ qcom,us-euro-gpios;
+  /delete-property/ qcom,wsa-max-devs;
+  /delete-property/ qcom,wsa-devs;
+  /delete-property/ qcom,wsa-aux-dev-prefix;
+  qcom,msm-micbias2-ext-cap;
+  qcom,msm-micbias1-ext-cap;
+  /delete-property/ qcom,ext-disp-audio-rx;
+  qcom,audio-routing =
+  "RX_BIAS", "INT_MCLK0",
+  "SPK_RX_BIAS", "INT_MCLK0",
+  "INT_LDO_H", "INT_MCLK0",
+  "RX_I2S_CLK", "INT_MCLK0",
+  "TX_I2S_CLK", "INT_MCLK0",
+  "MIC BIAS Internal2", "Headset Mic",
+  "AMIC2", "MIC BIAS Internal2",
+  "MIC BIAS External", "Digital Mic2",
+  "MIC BIAS External", "Handset Mic",
+  "DMIC2", "MIC BIAS External",
+  "MIC BIAS External", "Digital Mic4",
+  "MIC BIAS External", "Secondary Mic",
+  "DMIC4", "MIC BIAS External",
+
+  "PDM_IN_RX1", "PDM_OUT_RX1",
+  "PDM_IN_RX2", "PDM_OUT_RX2",
+  "PDM_IN_RX3", "PDM_OUT_RX3",
+  "ADC1_IN", "ADC1_OUT",
+  "ADC2_IN", "ADC2_OUT",
+  "ADC3_IN", "ADC3_OUT";
+  fih,msm-hs-v-headset-max = <1700>;
+  fih,msm-btn-vol-thr-low = <100 225 440 440 440>;
+  fih,msm-btn-vol-thr-high = <100 225 440 440 440>;
+};
+
+&pmic_analog_codec {
+  status = "okay";
+};
+
+&msm_sdw_codec {
+  status = "okay";
+};
+
+&pm660l_3 {
+	pmic_analog_codec: analog-codec@f000 {
+		qcom,cdc-vdd-mic-bias-current = <30000>;
+		qcom,cdc-micbias-cfilt-mv = <2700000>;
+	};
+};
+
+&soc {
+	pcm_noirq: qcom,msm-pcm-dsp-noirq {
+		qcom,latency-level = "regular";
+	};
+};

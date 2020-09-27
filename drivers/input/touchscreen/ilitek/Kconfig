@@ -1,0 +1,18 @@
+#
+# ILITEK I2C Touchscreen driver
+#
+
+config TOUCHSCREEN_ILI210X
+	tristate "ILITEK I2C touchscreen driver for linux platform"
+	default n
+	help
+	  This is the main file for touchpanel driver for ILITEK I2C
+	  touchscreens.
+
+	  Say Y here if you have a ILITEK I2C touchscreen connected
+	  to your system.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called gt9xx.

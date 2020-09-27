@@ -988,6 +988,9 @@ static long msm_isp_ioctl_unlocked(struct v4l2_subdev *sd,
 		if (arg) {
 			enum msm_vfe_input_src frame_src =
 				*((enum msm_vfe_input_src *)arg);
+			trace_printk("%s: vfe%d VIDIOC_MSM_ISP_REG_UPDATE_CMD",
+				__func__,vfe_dev->pdev->id);
+
 			vfe_dev->hw_info->vfe_ops.core_ops.
 				reg_update(vfe_dev, frame_src);
 		}
@@ -2220,6 +2223,9 @@ void msm_isp_do_tasklet(unsigned long data)
 			irq_status0, irq_status1, &ts);
 		irq_ops->process_epoch_irq(vfe_dev,
 			irq_status0, irq_status1, &ts);
+		trace_printk("END: vfeid: %d irq_status0: 0x%x irq_status1: 0x%x\n",
+		 vfe_dev->pdev->id, irq_status0, irq_status1);
+
 	}
 }
 

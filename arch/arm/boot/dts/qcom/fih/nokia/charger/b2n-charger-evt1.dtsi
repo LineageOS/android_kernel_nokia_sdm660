@@ -1,0 +1,78 @@
+/ {
+	/delete-node/ qcom,battery-data;
+	fih_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "fg-gen3-batterydata-mcnair-3700mah-100k.dtsi"
+		#include "fg-gen3-batterydata-mcnair-3700mah-150k.dtsi"
+		#include "fg-gen3-batterydata-scud-3700mah-200k.dtsi"
+		#include "fg-gen3-batterydata-scud-3700mah-300k.dtsi"
+	};
+};
+
+&usb3 {
+	dwc3@a800000 {
+		maximum-speed = "high-speed";
+	};
+};
+
+&pm660_fg {
+	qcom,battery-data = <&fih_batterydata>;
+	qcom,fg-cutoff-voltage = <3200>;
+	qcom,fg-empty-voltage = <3100>;
+	qcom,fg-vbatt-low-thr = <3200>;
+	qcom,fg-chg-term-current = <100>;	/* 100mA > 0.02C */
+	qcom,fg-sys-term-current = <(-250)>;	/* 100mA + 25mA */
+	qcom,fg-chg-term-base-current = <75>;	/* 100mA - 25mA */
+	qcom,fg-recharge-soc-thr = <99>;
+	//qcom,fg-auto-recharge-soc; // ida disable the SOC-base recharge function
+	qcom,hold-soc-while-full;
+	qcom,fg-jeita-thresholds = <0 15 45 55>;
+	qcom,fg-force-load-profile;
+	qcom,fg-recharge-voltage = <4250>;
+	qcom,battery-thermal-coefficients = [A1 50 ff];
+	qcom,fg-rsense-sel = <2>;
+	qcom,fg-cutoff-current = <200>; //default: 500mA
+//	qcom,fg-esr-tight-filter-micro-pct = <3000>;
+//	qcom,fg-esr-broad-filter-micro-pct = <3500>;
+//	qcom,slope-limit-coeffs = <1 1 1 1>;
+//	qcom,fg-rconn-mohms = <(-30)>;
+};
+
+&pm660_charger {
+	/delete-property/ qcom,batteryless-platform;
+	//qcom,auto-recharge-soc;//
+	qcom,fcc-max-ua = <3400000>;
+	qcom,usb-icl-ua = <3000000>;
+	qcom,fv-max-uv = <4400000>;
+	/delete-property/ qcom,wipower-max-uw;
+	qcom,step-charging-enable;
+	qcom,sw-jeita-enable;
+//	qcom,step-soc-thresholds = <65 70 75 80>;
+//	qcom,step-current-deltas = <1550000 0 0 0 0>;
+	fih,jeita_full_capacity = <1>;
+	fih_jeita_full_capacity_warm_temp = <450>;
+	fih,update_battery_status = <1>;
+	qcom,float-option = <1>;
+//	fih,lcm-on-off-cur-control;
+	fih,force_change_icl = <1>;
+//	qcom,jeita-fv-comp-cool = <0>;		/* 4.4V = 4.4V - 0.0V */
+//	qcom,jeita-cc-comp-cool = <750000>;	/* 1100mA = 1850mA - 1500mA */
+//	qcom,jeita-fv-comp-warm = <300000>;	/* 4.1V = 4.4V - 0.3V */
+//	qcom,jeita-cc-comp-warm = <0>;	/* 1850mA = 1850mA - 0mA */
+	qcom,thermal-mitigation
+					= <1500000 1200000 1500000>;
+/* VBAT_LOW	VBAT_HIGH	FCC */
+	qcom,step-fcc-cfg = <3000000 4180000 3400000>,
+					<4181000 4400000 1850000>;
+/* TEMP_LOW	TEMP_HIGH	FCC */
+	qcom,jeita-fcc-cfg = <0 57 370000>,
+					<58 157 1110000>,
+					<158 440 3400000>,
+					<441 550 1850000>;
+/* TEMP_LOW	TEMP_HIGH	FV */
+	qcom,jeita-fv-cfg = <0 157 4400000>,
+					<158 440 4400000>,
+					<441 550 4100000>;
+	qcom,step-fcc-hysteresis = <20000>;
+	qcom,jeita-fcc-fv-hysteresis = <6>;
+};

@@ -1,0 +1,69 @@
+&soc {
+	gpio_keys {
+		/delete-node/ vol_up;
+		vol_down {
+			label = "volume_down";
+			gpios = <&pm660l_gpios 7 0x1>;
+			linux,input-type = <1>;
+			linux,code = <114>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+		/delete-node/ camera_snapshot;
+		/delete-node/ camera_focus;
+	};
+};
+
+&pm660l_gpios {
+	/* GPIO 7 for VOL_UP */
+	gpio@c600 {
+		status = "okay";
+		qcom,mode = <0>;
+		qcom,pull = <0>;
+		qcom,vin-sel = <0>;
+		qcom,src-sel = <0>;
+		qcom,out-strength = <1>;
+	};
+};
+
+&spmi_bus {
+
+/*
+  AlanHZChang, Follow FIH BOOT REQE V3.0,
+   - PMIC RESIN: Volume UP KEY(KEY CODE 115)
+   - KPDPWR/RESIN DO NOT TRIGGER RESET FUNCTION
+   - KPDPWR+RESIN TRIGGER RESET FUNCTION
+*/
+  qcom,pm660@0 {
+		qcom,power-on@800 {
+			/* PON: KPDPWR */
+			qcom,pon_1 {
+				qcom,support-reset = <1>;
+				/* RESET TRIGGER TIME: S1 + S2 = 10756ms */
+				qcom,s1-timer = <10256>;
+				qcom,s2-timer = <500>;
+				/* RESET TYPE: SHUTDOWN(4) */
+				qcom,s2-type = <4>;
+			};
+
+			/* PON: RESIN */
+			qcom,pon_2 {
+				linux,code = <115>;
+				qcom,support-reset = <0>;
+			};
+
+			/* PON: KPDPWR + RESIN */
+			qcom,pon_3 {
+				qcom,pon-type = <3>;
+				qcom,support-reset = <0>;
+				qcom,pull-up = <1>;
+				/* RESET TRIGGER TIME: S1 + S2 = 8720ms */
+				qcom,s1-timer = <6720>;
+				qcom,s2-timer = <2000>;
+				/* RESET TYPE: WARM(1) */
+				qcom,s2-type = <1>;
+				qcom,use-bark;
+			};
+		};
+	};
+};

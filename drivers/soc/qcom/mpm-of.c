@@ -574,7 +574,12 @@ void msm_mpm_exit_sleep(bool from_idle)
 			unsigned int apps_irq = msm_mpm_get_irq_m2a(mpm_irq);
 			struct irq_desc *desc = apps_irq ?
 				irq_to_desc(apps_irq) : NULL;
-
+			//CORE-PK-SuspendLog-00+[
+			#ifdef CONFIG_FIH_SUSPEND_RESUME_LOG
+			if (strncmp(desc->irq_data.chip->name,"msmgpio", 7) == 0)
+				pr_info("[PM] Device wakeup by gpio %lu\n", desc->irq_data.hwirq);
+			#endif
+			//CORE-PK-SuspendLog-00+]
 			if (desc && !irqd_is_level_type(&desc->irq_data))
 				irq_set_irqchip_state(apps_irq,
 						IRQCHIP_STATE_PENDING, true);

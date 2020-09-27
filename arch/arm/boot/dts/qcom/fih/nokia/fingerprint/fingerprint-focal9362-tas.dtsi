@@ -1,0 +1,10 @@
+&soc {
+	focalfp {
+		compatible = "focaltech,fingerprint";
+		status = "okay";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0 72 0>;
+		fp,reset_gpio = <&tlmm 20 0x0>;
+		fp,irq_gpio = <&tlmm 72 0x0>;
+	};
+};

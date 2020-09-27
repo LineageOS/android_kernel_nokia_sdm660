@@ -279,7 +279,7 @@
 		qcom,msm-bus,num-paths = <1>;
 		qcom,msm-bus,vectors-KBps =
 			<22 512 0 0>,
-			<22 512 0 1000>;
+			<22 512 0 6400000>;
 
 		qcom,mmss-ulp-clamp-ctrl-offset = <0x14>;
 

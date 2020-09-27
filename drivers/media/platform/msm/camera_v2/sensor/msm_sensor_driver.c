@@ -18,6 +18,22 @@
 #include "msm_cci.h"
 #include "msm_camera_dt_util.h"
 
+#define FTM
+#ifdef FTM
+#define CAMERA_MASK_S5K2L7 0X01
+#define CAMERA_MASK_S5K4H8 0X02
+#define CAMERA_MASK_S5K3H7 0X04
+#define CAMERA_MASK_S5K3M3 0X02
+#define CAMERA_MASK_S5K3P8 0X04
+#define CAMERA_MASK_S5KGM1SP 0x08 
+#define CAMERA_MASK_S5K5E9YU05  0x10
+#define CAMERA_MASK_OV16885   0x20
+#define CAMERA_MASK_HI846   0x40
+
+
+static int32_t g_camera_ping = 0;
+#endif
+
 /* Logging macro */
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
@@ -29,6 +45,18 @@ static int32_t msm_sensor_driver_platform_probe(struct platform_device *pdev);
 
 /* Static declaration */
 static struct msm_sensor_ctrl_t *g_sctrl[MAX_CAMERAS];
+
+//add for debug,start
+#define FIH_DEBUG
+#ifdef FIH_DEBUG
+static struct kobject *fih_camera_kernel_kobj = NULL;
+static uint16_t fih_camera_read_register_value=0;
+static unsigned int fih_camera_read_register_reg=0;
+#endif
+//add for debug,end
+
+extern int fih_camera_dev_init(struct msm_camera_sensor_slave_info *slave_info);
+extern int fih_camera_bbs_init(struct msm_sensor_ctrl_t * ctrl);//add
 
 static int msm_sensor_platform_remove(struct platform_device *pdev)
 {
@@ -723,6 +751,18 @@ static void msm_sensor_fill_sensor_info(struct msm_sensor_ctrl_t *s_ctrl,
 	strlcpy(entity_name, s_ctrl->msm_sd.sd.entity.name, MAX_SENSOR_NAME);
 }
 
+#ifdef FTM
+static ssize_t show_camera_ping(struct device *dev,
+					struct device_attribute *attr, char *buf)
+{
+	pr_err("%s=%d", __func__, g_camera_ping);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", g_camera_ping);
+}
+
+static DEVICE_ATTR(cam_ping, 440, show_camera_ping, NULL);
+static const struct attribute *cam_ping_attrib = &dev_attr_cam_ping.attr;
+#endif
+
 /* static function definition */
 static int32_t msm_sensor_driver_is_special_support(
 	struct msm_sensor_ctrl_t *s_ctrl,
@@ -901,21 +941,26 @@ int32_t msm_sensor_driver_probe(void *setting,
 		 * and probe already succeeded for that sensor. Ignore this
 		 * probe
 		 */
-		if (slave_info->sensor_id_info.sensor_id ==
-			s_ctrl->sensordata->cam_slave_info->
-				sensor_id_info.sensor_id &&
-			!(strcmp(slave_info->sensor_name,
-			s_ctrl->sensordata->cam_slave_info->sensor_name))) {
-			pr_err("slot%d: sensor name: %s sensor id%d already probed\n",
+
+		/*
+                 * pr_err("%s, slave_info->slave_addr = 0x%x\n", __func__, slave_info->slave_addr);
+                 * pr_err("%s, slave_info->sensor_name = %s\n", __func__, slave_info->sensor_name);
+                 * pr_err("%s, s_ctrl->sensordata->cam_slave_info->slave_addr = 0x%x\n", __func__, s_ctrl->sensordata->cam_slave_info->slave_addr);
+                 * pr_err("%s, s_ctrl->sensordata->cam_slave_info->sensor_name = %s\n", __func__, s_ctrl->sensordata->cam_slave_info->sensor_name);
+                 */
+
+		if ((slave_info->sensor_id_info.sensor_id ==
+			s_ctrl->sensordata->cam_slave_info->sensor_id_info.sensor_id) &&
+			(slave_info->slave_addr == s_ctrl->sensordata->cam_slave_info->slave_addr)) {	//SW4-RL-Camera-add more condition when probe again-00*_20170825
+			pr_err("%s, slot_%d (sensor_id: 0x%x, sensor_name = %s) already probed\n", __func__,
 				slave_info->camera_id,
-				slave_info->sensor_name,
-				s_ctrl->sensordata->cam_slave_info->
-					sensor_id_info.sensor_id);
+				s_ctrl->sensordata->cam_slave_info->sensor_id_info.sensor_id,
+				s_ctrl->sensordata->cam_slave_info->sensor_name);
 			msm_sensor_fill_sensor_info(s_ctrl,
 				probed_info, entity_name);
-		} else
-			pr_err("slot %d has some other sensor\n",
-				slave_info->camera_id);
+		} else{
+			pr_err("%s, slot_%d has some other sensor\n", __func__, slave_info->camera_id);
+		}
 
 		rc = 0;
 		goto free_slave_info;
@@ -1046,9 +1091,44 @@ CSID_TG:
 	}
 
 	pr_err("%s probe succeeded", slave_info->sensor_name);
+	fih_camera_dev_init(slave_info);
 
 	s_ctrl->bypass_video_node_creation =
 		slave_info->bypass_video_node_creation;
+
+	pr_err("%s wbl E slave_info->sensor_name = %s \n", __func__, slave_info->sensor_name);
+#ifdef FTM
+	/* Add for FIH test */
+	if(!strcmp(slave_info->sensor_name, "s5k2l7sa_s2p"))
+		g_camera_ping |= CAMERA_MASK_S5K2L7;
+	else if(!strcmp(slave_info->sensor_name, "s5k4h8_s2p"))
+		g_camera_ping |= CAMERA_MASK_S5K4H8;
+	else if(!strcmp(slave_info->sensor_name, "s5k3h7_s2p"))
+		g_camera_ping |= CAMERA_MASK_S5K3H7;
+	else if(!strcmp(slave_info->sensor_name, "s5k2l7sa_s3p"))
+		g_camera_ping |= CAMERA_MASK_S5K2L7;
+	else if(!strcmp(slave_info->sensor_name, "s5k3m3sm_s3p"))
+		g_camera_ping |= CAMERA_MASK_S5K3M3;
+	else if((!strcmp(slave_info->sensor_name, "s5k3p8sp_s3p")) || (!strcmp(slave_info->sensor_name, "s5k3p8sp_b2n")))
+		g_camera_ping |= CAMERA_MASK_S5K3P8;
+	else if(!strcmp(slave_info->sensor_name, "s5k2l7_b2n_wide"))
+		g_camera_ping |= CAMERA_MASK_S5K2L7;
+	else if(!strcmp(slave_info->sensor_name, "s5k3m3sm_b2n_tele"))
+		g_camera_ping |= CAMERA_MASK_S5K3M3;
+	/* FIH-Binn-Add for TAS FAP test -00+{ */
+	else if(!strcmp(slave_info->sensor_name, "s5kgm1sp"))
+		g_camera_ping |= CAMERA_MASK_S5KGM1SP;
+	else if(!strcmp(slave_info->sensor_name, "s5k5e9yu05"))
+		g_camera_ping |= CAMERA_MASK_S5K5E9YU05;
+	else if(!strcmp(slave_info->sensor_name, "ov16885"))
+		g_camera_ping |= CAMERA_MASK_OV16885;
+	else if(!strcmp(slave_info->sensor_name, "hi846"))
+		g_camera_ping |= CAMERA_MASK_HI846;
+	/* FIH-Binn-Add for TAS FAP test -00+}*/
+	
+	pr_err("%s wbl E slave_info->sensor_name = %s \n", __func__, slave_info->sensor_name);
+	pr_err("%s wbl E g_camera_ping = 0x%x \n", __func__, g_camera_ping);
+#endif
 
 	/*
 	 * Create /dev/videoX node, comment for now until dummy /dev/videoX
@@ -1094,6 +1174,8 @@ CSID_TG:
 
 	msm_sensor_fill_sensor_info(s_ctrl, probed_info, entity_name);
 
+        fih_camera_bbs_init(s_ctrl);//add
+
 	/*
 	 * Set probe succeeded flag to 1 so that no other camera shall
 	 * probed on this slot
@@ -1135,6 +1217,7 @@ static int32_t msm_sensor_driver_get_dt_data(struct msm_sensor_ctrl_t *s_ctrl)
 		goto FREE_SENSOR_DATA;
 	}
 	s_ctrl->id = cell_id;
+	pr_err(" cell-index cell_id=%d", cell_id);
 
 	/* Validate cell_id */
 	if (cell_id >= MAX_CAMERAS) {
@@ -1174,7 +1257,7 @@ static int32_t msm_sensor_driver_get_dt_data(struct msm_sensor_ctrl_t *s_ctrl)
 				sensordata->special_support_size = 0;
 				break;
 			}
-			CDBG("%s special_support_sensors[%d] = %s\n", __func__,
+			pr_err("%s special_support_sensors[%d] = %s\n", __func__,
 				i, sensordata->special_support_sensors[i]);
 		}
 	}
@@ -1268,6 +1351,62 @@ FREE_SENSOR_DATA:
 	return rc;
 }
 
+//add for debug,start
+#ifdef FIH_DEBUG
+static ssize_t fih_camera_read_register_store(struct device *dev, struct  device_attribute *attr, const char *buf, size_t size)
+{
+	unsigned int reg = 0,id=0;
+	uint16_t value = 0;
+	struct msm_sensor_ctrl_t  *s_ctrl;
+
+	if (sscanf(buf, "%d,%x",&id, &reg) <= 0) {
+		pr_err("Could not tranform the register value\n");
+		return -EINVAL;
+	}
+
+	s_ctrl = g_sctrl[id];
+	s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, reg, &value, MSM_CAMERA_I2C_BYTE_DATA);
+
+	pr_err("Register 0x%X: 0x%X\n", reg, value);
+	fih_camera_read_register_value=value;
+	fih_camera_read_register_reg=reg;
+	return 1;//strlen("fih_camera_read_register_store\n");
+}
+static ssize_t fih_camera_read_register_show(struct device *dev, struct  device_attribute *attr , char *buf)
+{
+	sprintf(buf, "read register:0x%x,value=0x%x\n",fih_camera_read_register_reg, fih_camera_read_register_value);
+	return strlen(buf);
+}
+static ssize_t fih_camera_write_register_store(struct device *dev, struct  device_attribute *attr, const char *buf, size_t size)
+{
+	unsigned int rc=0,reg = 0,value=0, id=0;
+	struct msm_sensor_ctrl_t  *s_ctrl;
+
+	if (sscanf(buf, "%d,%x,%x", &id , &reg , &value) <= 0) {
+		pr_err("Could not tranform the register value\n");
+		return -EINVAL;
+	}
+	s_ctrl = g_sctrl[id];
+	s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, (uint16_t)reg, (uint16_t) value, MSM_CAMERA_I2C_BYTE_DATA);
+	pr_err("Write Register 0x%X: 0x%X\n", reg, value);
+	if(rc){
+		pr_err("Write Register fail\n");
+	}
+	return 1;//strlen("fih_camera_read_register_store\n");
+}
+static DEVICE_ATTR(register_read, 0644, fih_camera_read_register_show, fih_camera_read_register_store);
+static DEVICE_ATTR(register_write, 0644, NULL, fih_camera_write_register_store);
+static struct attribute *fih_camera_attributes[] = {
+		&dev_attr_register_read.attr,
+		&dev_attr_register_write.attr,
+		NULL
+};
+static const struct attribute_group fih_camera_attr_group = {
+		.attrs = fih_camera_attributes,
+};
+#endif
+//add for debug,end
+
 static int32_t msm_sensor_driver_parse(struct msm_sensor_ctrl_t *s_ctrl)
 {
 	int32_t                   rc = 0;
@@ -1319,7 +1458,19 @@ static int32_t msm_sensor_driver_parse(struct msm_sensor_ctrl_t *s_ctrl)
 
 	/* Store sensor control structure in static database */
 	g_sctrl[s_ctrl->id] = s_ctrl;
-	CDBG("g_sctrl[%d] %pK", s_ctrl->id, g_sctrl[s_ctrl->id]);
+	pr_err("wbl g_sctrl[%d] %pK", s_ctrl->id, g_sctrl[s_ctrl->id]);
+
+//add for debug,start
+#ifdef FIH_DEBUG
+	if(fih_camera_kernel_kobj == NULL)
+	{
+		fih_camera_kernel_kobj = kobject_create_and_add("fih_camera_control", kernel_kobj);
+		rc = sysfs_create_group(fih_camera_kernel_kobj, &fih_camera_attr_group);
+		if (rc)
+			kobject_put(fih_camera_kernel_kobj);
+	}
+#endif
+//add for debug,end
 
 	return rc;
 
@@ -1376,6 +1527,13 @@ static int32_t msm_sensor_driver_platform_probe(struct platform_device *pdev)
 
 	/* Fill device in power info */
 	s_ctrl->sensordata->power_info.dev = &pdev->dev;
+#ifdef FTM
+	pr_err("platform : Register sysfs, cam_ping_attrib\n");
+	rc = sysfs_create_file(&pdev->dev.kobj, cam_ping_attrib);
+	if(rc) {
+		pr_err("Cannot register sysfs, cam_ping_attrib\n");
+	}
+#endif
 	return rc;
 FREE_S_CTRL:
 	kfree(s_ctrl);

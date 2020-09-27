@@ -1,0 +1,10 @@
+/* C1N EVT 2.0 SDM660 */
+
+/* inherit preEVT Settings */
+#include "c1n-preEVT-660.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v2.dtsi"
+
+/* Diff */
+

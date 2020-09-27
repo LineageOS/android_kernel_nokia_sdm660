@@ -1,0 +1,27 @@
+#
+# Boost drivers configuration
+#
+
+menuconfig BOOST_CONVERTER_SUPPORT
+	bool "Boost Converter support"
+	help
+	  Enable this to be able to choose the drivers for controlling the
+	  boost converter on some platforms, for example on PDAs.
+
+if BOOST_CONVERTER_SUPPORT
+
+config BOOST_FP7720
+	tristate "Boost Driver for FP7720"
+	depends on I2C
+	select REGMAP_I2C
+	help
+		This supports Fiti Power 7720BE9 Boost Converter
+
+config BOOST_NT50356
+	tristate "Boost and WLED Driver for BOOST_NT50356"
+	depends on I2C
+	select REGMAP_I2C
+	help
+		This supports NOVATEK BOOST_NT50356 Boost Converter and WLED driver
+
+endif # BOOST_CONVERTER_SUPPORT

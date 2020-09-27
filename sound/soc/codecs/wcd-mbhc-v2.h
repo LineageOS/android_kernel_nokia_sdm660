@@ -279,7 +279,11 @@ struct wcd_mbhc_config {
 	int anc_micbias;
 	bool enable_anc_mic_detect;
 	u32 enable_usbc_analog;
+	//fihtdc, 2018017 Dennis, add for customized debounce
+	int fih_debounce;
 	struct usbc_ana_audio_config usbc_analog_cfg;
+	//add for new/old HW support FAO-4
+	bool fih_hs_support;
 };
 
 struct wcd_mbhc_intr {

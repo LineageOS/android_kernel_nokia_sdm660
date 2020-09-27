@@ -1,0 +1,62 @@
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
+/dts-v1/;
+
+#include "sdm630.dtsi"
+#include "sdm630-mtp.dtsi"
+#include "sdm660-internal-codec-pl2.dtsi"
+#include "fih/nokia/pl2-preEVT-630.dtsi"
+/ {
+	model = "Qualcomm Technologies, Inc. SDM 630 PM660 + PM660L MTP, PL2 dvt";
+	compatible = "qcom,sdm630-mtp", "qcom,sdm630", "qcom,mtp";
+	qcom,board-id = <8 0>;
+	qcom,pmic-id = <0x0001001b 0x0101011a 0x0 0x0>,
+			<0x0001001b 0x0201011a 0x0 0x0>;
+	fih,hw-id = <3 2 0>;
+};
+
+&i2c_7 {
+
+	tas2557@4c {
+		#sound-dai-cells = <1>;
+		compatible = "ti,tas2557";
+		reg = <0x4c>;  
+		pinctrl-names = "default";
+		pinctrl-0 = <&tas2557_irq_default>;
+		ti,cdc-reset-gpio = <&tlmm 56 0>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <49 0>;
+		ti,irq-gpio = <&tlmm 49 0>;
+		ti,i2s-bits = <16>;   /* support 16, 24, 32 */
+		ti,bypass-tmax = <0>;   /* 0, not bypass; 1, bypass */
+		tas2557,device-model = "PL2"; /* Select tas2557 firmware */
+	};
+};
+
+
+&tlmm {
+		tas2557_irq_default: tas2557_irq_default {
+			mux {
+				pins = "gpio49";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio49";
+				drive-strength = <2>;
+				bias-disable = <0>;
+			};
+		};
+	
+};

@@ -43,6 +43,9 @@
 #define SYSLOG_ACTION_SIZE_UNREAD    9
 /* Return size of the log buffer */
 #define SYSLOG_ACTION_SIZE_BUFFER   10
+/* for BBS start */
+#define SYSLOG_ACTION_GET_KERNEL_BUFFER 11
+/* for BBS end */
 
 #define SYSLOG_FROM_READER           0
 #define SYSLOG_FROM_PROC             1

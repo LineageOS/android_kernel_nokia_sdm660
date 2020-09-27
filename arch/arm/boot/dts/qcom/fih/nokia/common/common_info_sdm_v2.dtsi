@@ -1,0 +1,15 @@
+&soc {
+/*
+  FIH Device Tree Common Information
+
+*/
+		fih_info_management {
+			status = "okay";
+			compatible = "fih,dt_info";
+			ftm_voltage_path = "/sys/class/power_supply/battery/voltage_now";
+			ftm_charger_cur_path = "/sys/class/power_supply/battery/input_current_max";
+			ftm_charger_path = "/sys/class/power_supply/battery/charging_enabled";
+			acdbdir="C1N";
+                        adspinfo="BBBC";
+      };
+};

@@ -44,6 +44,10 @@ redirect_openssl	= 2>&1
 quiet_redirect_openssl	= 2>&1
 silent_redirect_openssl = 2>/dev/null
 
+# FIH, use fih module key {
+ifneq ($(CONFIG_MODULE_SIG_FIH),y)
+# FIH, use fih module key }
+
 # We do it this way rather than having a boolean option for enabling an
 # external private key, because 'make randconfig' might enable such a
 # boolean option and we unfortunately can't make it depend on !RANDCONFIG.
@@ -86,6 +90,24 @@ $(obj)/x509.genkey:
 	@echo >>$@ "subjectKeyIdentifier=hash"
 	@echo >>$@ "authorityKeyIdentifier=keyid"
 endif
+
+# FIH, use fih module key {
+else
+
+$(obj)/signing_key.pem: $(obj)/x509.genkey
+	@echo "Use fih module sign key"
+	@pwd
+	@ls -l $(CONFIG_MODULE_SIG_FIH_KEY_PATH)/
+	@cp $(CONFIG_MODULE_SIG_FIH_KEY_PATH)/signing_key.pem $(obj)/signing_key.pem
+
+$(obj)/x509.genkey:
+	@echo "Use fih x509.genkey"
+	@pwd
+	@ls -l $(CONFIG_MODULE_SIG_FIH_KEY_PATH)/
+	@cp $(CONFIG_MODULE_SIG_FIH_KEY_PATH)/x509.genkey $(obj)/x509.genkey
+	
+endif
+# FIH, use fih module key }
 
 $(eval $(call config_filename,MODULE_SIG_KEY))
 

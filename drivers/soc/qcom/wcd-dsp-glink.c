@@ -409,6 +409,7 @@ static int wdsp_glink_close_ch(struct wdsp_glink_ch *ch)
 				ch->ch_cfg.name);
 		}
 	} else {
+		ch->handle = NULL;
 		dev_dbg(wpriv->dev, "%s: ch %s is already closed\n", __func__,
 			ch->ch_cfg.name);
 	}

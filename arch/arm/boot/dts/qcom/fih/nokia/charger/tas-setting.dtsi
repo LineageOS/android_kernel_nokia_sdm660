@@ -1,0 +1,26 @@
+/ {
+	/delete-node/ qcom,battery-data;
+	fih_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "fg-gen3-batterydata-ALT-3000mah-100k-DRG.dtsi"
+		#include "fg-gen3-batterydata-coslight-3000mah-200k-DRG.dtsi"
+		#include "fg-gen3-batterydata-McNair-3000mah-300k-DRG.dtsi"
+		#include "fg-gen3-batterydata-jiade-lishen-3500mah-51k-TAS.dtsi"
+	};
+};
+
+&pm660_fg {
+	qcom,fg-sys-term-current = <(-150)>;	/* 100mA + 25mA */
+	qcom,battery-thermal-coefficients = [A1 50 ff];
+	fih,check-external-rsense;
+	fih,use-external-resense = <0>; /* 0:internal, 1: external, 2:PM660+SMB */
+};
+
+&pm660_charger {
+	fih,dcp-2a-function-enable;
+	fih,lcm-on-off-cur-control;
+	/* TEMP_LOW	TEMP_HIGH	FV */
+	qcom,jeita-fv-cfg = <0 157 4400000>,
+					<158 440 4400000>,
+					<441 550 4150000>;
+};

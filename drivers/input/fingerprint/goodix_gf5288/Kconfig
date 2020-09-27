@@ -1,0 +1,9 @@
+#
+# Configuration for Goodix GF5288
+#
+config INPUT_GF5288
+	bool "Goodix GF5288 Driver"
+	default n
+	help
+	  This is a Goodix GF5288 chipset Driver.
+

@@ -1389,7 +1389,7 @@ static void qpnp_pwm_free(struct pwm_chip *pwm_chip,
 static int qpnp_pwm_config(struct pwm_chip *pwm_chip,
 	struct pwm_device *pwm, int duty_ns, int period_ns)
 {
-	int rc;
+	int rc=0; //FIH,Michael, give rc a initial value to avoid qpnp_pwm_init fail
 	unsigned long flags;
 	struct qpnp_pwm_chip *chip = qpnp_pwm_from_pwm_chip(pwm_chip);
 	int prev_period_us = chip->pwm_config.pwm_period;

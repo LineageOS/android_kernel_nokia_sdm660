@@ -12,6 +12,10 @@ menuconfig INPUT_TOUCHSCREEN
 if INPUT_TOUCHSCREEN
 
 source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
+# SW4-HL-TP-BringUpILI2121-00+_20170327
+source "drivers/input/touchscreen/ilitek/Kconfig"
+# SW4-HL-TP-BringUpGT915L-00+_20180119
+source "drivers/input/touchscreen/gt9xx/Kconfig"
 
 config OF_TOUCHSCREEN
 	def_tristate INPUT
@@ -1223,6 +1227,11 @@ config TOUCHSCREEN_ST
 
 	  If unsure, say N.
 
+
 source "drivers/input/touchscreen/st/Kconfig"
 
+source "drivers/input/touchscreen/focaltech_touch/Kconfig"
+source "drivers/input/touchscreen/nt36xxx/Kconfig"
+source "drivers/input/touchscreen/gt1x/Kconfig"
+source "drivers/input/touchscreen/focaltech_touch_8719/Kconfig"
 endif

@@ -74,6 +74,9 @@
 #define VOLTAGE_CONVERTER(value, min_value, step_size)\
 	((value - min_value)/step_size)
 
+#define BBOX_WCD_SPMI_PROBE_FAILED do {printk("BBox::UEC;2::1\n");} while(0);
+#define BBOX_WCD_REGISTER_ADSP_NOTIFIER_FAILED do {printk("BBox::UEC;2::2\n");} while(0);
+
 enum {
 	BOOST_SWITCH = 0,
 	BOOST_ALWAYS,
@@ -858,7 +861,7 @@ exit:
 	msm_anlg_cdc_compute_impedance(codec, impedance_l, impedance_r,
 				      zl, zr, high);
 
-	dev_dbg(codec->dev, "%s: RL %d ohm, RR %d ohm\n", __func__, *zl, *zr);
+	pr_info("%s: RL %d ohm, RR %d ohm\n", __func__, *zl, *zr);
 	dev_dbg(codec->dev, "%s: Impedance detection completed\n", __func__);
 }
 
@@ -1412,6 +1415,7 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 			}
 			ret = regulator_set_load(supply->supply,
 						 supply->optimum_ua);
+			dev_err(codec->dev, "%s: regulator_set_load(%d)\n",__func__, supply->optimum_ua);
 			if (ret < 0) {
 				dev_err(codec->dev,
 					"Setting regulator optimum mode(en) failed for micbias with err = %d\n",
@@ -2201,7 +2205,8 @@ static int msm_anlg_cdc_codec_enable_adc(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		msm_anlg_cdc_codec_enable_adc_block(codec, 1);
-		if (w->reg == MSM89XX_PMIC_ANALOG_TX_2_EN)
+		//rita change for tas CFILT connect setting wrong at 20181207
+		if ((w->reg == MSM89XX_PMIC_ANALOG_TX_2_EN) && (strstr(saved_command_line, "androidboot.device=TAS") == NULL))
 			snd_soc_update_bits(codec,
 			MSM89XX_PMIC_ANALOG_MICB_1_CTL, 0x02, 0x02);
 		/*
@@ -2530,7 +2535,7 @@ static int msm_anlg_cdc_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 	char *external_text = "External";
 	bool micbias2;
 
-	dev_dbg(codec->dev, "%s %d\n", __func__, event);
+	dev_err(codec->dev, "%s %d\n", __func__, event);
 	switch (w->reg) {
 	case MSM89XX_PMIC_ANALOG_MICB_1_EN:
 	case MSM89XX_PMIC_ANALOG_MICB_2_EN:
@@ -4093,6 +4098,8 @@ int msm_anlg_codec_info_create_codec_entry(struct snd_info_entry *codec_root,
 	if (ret < 0) {
 		pr_err("%s: Audio notifier register failed ret = %d\n",
 			__func__, ret);
+		printk("BBox;Failed to register adsp state notifier\n");
+		BBOX_WCD_REGISTER_ADSP_NOTIFIER_FAILED;
 		return ret;
 	}
 	return 0;
@@ -4641,6 +4648,8 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev,
 			"%s:snd_soc_register_codec failed with error %d\n",
 			__func__, ret);
+		printk("BBox;snd_soc_register_codec failed\n");
+		BBOX_WCD_SPMI_PROBE_FAILED;
 		goto err_supplies;
 	}
 	BLOCKING_INIT_NOTIFIER_HEAD(&sdm660_cdc->notifier);

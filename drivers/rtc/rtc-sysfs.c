@@ -146,6 +146,10 @@ wakealarm_show(struct device *dev, struct device_attribute *attr, char *buf)
 	return retval;
 }
 
+#ifdef CONFIG_FIH_MT_SLEEP
+int ftm_sleep_test = 0;
+#endif
+
 static ssize_t
 wakealarm_store(struct device *dev, struct device_attribute *attr,
 		const char *buf, size_t n)
@@ -175,6 +179,19 @@ wakealarm_store(struct device *dev, struct device_attribute *attr,
 		} else
 			adjust = 1;
 	}
+#ifdef CONFIG_FIH_MT_SLEEP
+	else if (*buf_ptr == 'f') {
+		buf_ptr++;
+		pr_info("%s f%lu\n", __func__, simple_strtoul(buf_ptr, NULL, 0));
+		if (simple_strtoul(buf_ptr, NULL, 0)) {
+			adjust = 1;
+			ftm_sleep_test = 1;
+		} else {
+			ftm_sleep_test = 0;
+		}
+	}
+#endif
+
 	alarm = simple_strtoul(buf_ptr, NULL, 0);
 	if (adjust) {
 		alarm += now;
@@ -187,7 +204,11 @@ wakealarm_store(struct device *dev, struct device_attribute *attr,
 		retval = rtc_read_alarm(rtc, &alm);
 		if (retval < 0)
 			return retval;
+#ifdef CONFIG_FIH_MT_SLEEP
+		if (alm.enabled && !ftm_sleep_test) {
+#else
 		if (alm.enabled) {
+#endif
 			if (push) {
 				rtc_tm_to_time(&alm.time, &push);
 				alarm += push;

@@ -556,6 +556,7 @@ struct qpnp_led_data {
 	bool				default_on;
 	bool				in_order_command_processing;
 	int				turn_off_delay_ms;
+	int				max_brightness;
 };
 
 static DEFINE_MUTEX(flash_lock);
@@ -1885,9 +1886,13 @@ static int qpnp_led_set_max_brightness(struct qpnp_led_data *led)
 		led->cdev.max_brightness = led->max_current;
 		break;
 	case QPNP_ID_RGB_RED:
+		led->cdev.max_brightness = led->max_brightness;
+		break;
 	case QPNP_ID_RGB_GREEN:
+		led->cdev.max_brightness = led->max_brightness;
+		break;
 	case QPNP_ID_RGB_BLUE:
-		led->cdev.max_brightness = RGB_MAX_LEVEL;
+		led->cdev.max_brightness = led->max_brightness;
 		break;
 	case QPNP_ID_LED_MPP:
 		if (led->mpp_cfg->pwm_mode == MANUAL_MODE)
@@ -3930,6 +3935,14 @@ static int qpnp_leds_probe(struct platform_device *pdev)
 				"Failure reading max_current, rc =  %d\n", rc);
 			goto fail_id_check;
 		}
+
+		rc = of_property_read_u32(temp, "qcom,max-brightness",
+                        &led->max_brightness);
+                if (rc < 0) {
+                        dev_err(&led->pdev->dev,
+                                "Failure reading max_brightness, rc =  %d\n", rc);
+			led->max_brightness = 255;
+                }
 
 		rc = of_property_read_u32(temp, "qcom,id", &led->id);
 		if (rc < 0) {

@@ -894,7 +894,7 @@ void mmc_add_card_debugfs(struct mmc_card *card)
 			goto err;
 
 	if (mmc_card_mmc(card))
-		if (!debugfs_create_file("ext_csd", S_IRUSR, root, card,
+		if (!debugfs_create_file("ext_csd", S_IRUGO, root, card,
 					&mmc_dbg_ext_csd_fops))
 			goto err;
 

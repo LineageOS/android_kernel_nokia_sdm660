@@ -37,6 +37,9 @@ struct rq_data rq_info;
 struct workqueue_struct *rq_wq;
 spinlock_t rq_lock;
 
+#ifdef CONFIG_FIH_CPU_USAGE
+extern void count_cpu_time(void);
+#endif
 /*
  * Per cpu nohz control structure
  */
@@ -111,6 +114,10 @@ static void tick_do_update_jiffies64(ktime_t now)
 	}
 	write_sequnlock(&jiffies_lock);
 	update_wall_time();
+
+#ifdef CONFIG_FIH_CPU_USAGE
+	count_cpu_time();
+#endif
 }
 
 /*

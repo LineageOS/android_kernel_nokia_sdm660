@@ -1,0 +1,35 @@
+&soc {
+	fih_info {
+		compatible = "fih_info";
+		status = "ok";
+		fih-info,bandinfo = "Overwrite_In_ABL|G_850_900_1800_1900^W_1_2_5_8^C_0^T_34_39^L_1_3_5_7_8_28_38_39_40_41";
+		fih-info,simslot  = "Overwrite_In_ABL|2";
+		fih-info,fqcxmlpath = "Overwrite_In_ABL|fqc_C1N_LATAM_SS.xml";
+		fih-info,hwmodel  = "C1N_XX";
+		fih-info,devmodel = "C1N";
+		fih-info,baseband = "0.1";
+	};
+
+	fih_mfd {
+		compatible = "fih_mfd";
+		status = "ok";
+		fih-mfd,productid = "NULL";
+		fih-mfd,bt_mac    = "NULL";
+		fih-mfd,wifi_mac  = "NULL";
+	};
+
+	fih_ddr {
+                compatible = "fih_ddr";
+                status = "ok";
+                fih-ddr,draminfo = "UNKNOWN_ LPDDR4x 4096MB";
+                fih-ddr,dramtest = "none";
+        };
+
+	fih_apr {
+		compatible = "fih_apr";
+		status = "ok";
+		fih-apr,poweroncause = "0x00000000";
+		fih-apr,poweroffcause = "0x00000000";
+		fih-apr,rebootreason = "0x00000000";
+	};
+};

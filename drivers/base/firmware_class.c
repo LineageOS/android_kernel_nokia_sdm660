@@ -392,6 +392,17 @@ static int fw_get_filesystem_firmware(struct device *device,
 			break;
 		}
 
+		/* CONFIG_PXLW_IRIS3 */
+		if (!strcmp(buf->fw_id, "iris3.fw") && i == 1) {
+			snprintf(path, PATH_MAX, "%s/%s", "/persist", buf->fw_id);
+			dev_err(device, "[Iris] Try to load: %s\n", path);
+		}
+		if (!strcmp(buf->fw_id, "iris3.fw") && i == 2) {
+			snprintf(path, PATH_MAX, "%s/%s", "/data/vendor/misc", buf->fw_id);
+			dev_err(device, "[Iris] Try to load: %s\n", path);
+		}
+		/* end of iris3 */
+
 		file = filp_open(path, O_RDONLY, 0);
 		if (IS_ERR(file))
 			continue;

@@ -1,0 +1,71 @@
+qcom,DRG_3000mah_100k {
+	qcom, = <24>;
+	/* #3302300_FIH_HE340atl_3000mAh_averaged_MasterSlave_Feb12th2018*/
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,nom-batt-capacity-mah = <3000>;
+	qcom,fastchg-current-ma = <3000>;
+	qcom,batt-id-kohm = <100>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "DRG_alt_3000mah_100k";
+	qcom,checksum = <0x95AA>;
+	qcom,gui-version = "PM660GUI - 0.0.0.45";
+	qcom,fg-profile-data = [
+		 CD 1F 42 05
+		 D1 0A EF 05
+		 E8 1C D5 01
+		 00 04 5A 0A
+		 DB 17 AF 23
+		 A1 44 1C 5A
+		 79 00 00 00
+		 11 00 00 00
+		 00 00 C6 C5
+		 E8 C4 96 C2
+		 1D 00 08 00
+		 B5 E2 D7 ED
+		 DB FD E1 EB
+		 53 FD F9 0B
+		 5B 07 AF 2B
+		 19 06 09 20
+		 27 00 14 00
+		 09 20 11 05
+		 04 0B AD 05
+		 B6 1C 34 03
+		 BC 15 85 12
+		 87 18 EC 23
+		 C8 4D 7D 5B
+		 68 00 00 00
+		 0D 00 00 00
+		 00 00 DC D5
+		 E5 C2 27 C3
+		 18 00 00 00
+		 F9 EA D7 ED
+		 B7 F4 A3 EA
+		 8A EB 4F 0A
+		 FF FD 59 1A
+		 99 33 CC FF
+		 07 10 00 00
+		 03 0C 66 46
+		 18 00 40 00
+		 CA 01 0A FA
+		 FF 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+	];
+};

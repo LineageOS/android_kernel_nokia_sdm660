@@ -22,6 +22,10 @@
 #include "mdss_mdp_trace.h"
 #include "mdss_debug.h"
 
+#if defined(CONFIG_PXLW_IRIS3)
+#include "mdss_dsi_iris3.h"
+#endif
+
 #define SMP_MB_SIZE		(mdss_res->smp_mb_size)
 #define SMP_MB_CNT		(mdss_res->smp_mb_cnt)
 #define SMP_MB_ENTRY_SIZE	16
@@ -46,6 +50,7 @@
 #define QSEED3_DEFAULT_PRELAOD_V  0x3
 
 #define TS_CLK 19200000
+
 
 static DEFINE_MUTEX(mdss_mdp_sspp_lock);
 static DEFINE_MUTEX(mdss_mdp_smp_lock);
@@ -1124,6 +1129,10 @@ static void mdss_mdp_init_pipe_params(struct mdss_mdp_pipe *pipe)
 	memset(&pipe->layer, 0, sizeof(struct mdp_input_layer));
 
 	pipe->multirect.mode = MDSS_MDP_PIPE_MULTIRECT_NONE;
+#if defined(CONFIG_PXLW_IRIS3)
+	if (iris_is_valid_cfg())
+		mdss_mdp_sspp_csc_reset(pipe);
+#endif
 }
 
 static int mdss_mdp_pipe_init_config(struct mdss_mdp_pipe *pipe,
@@ -2696,10 +2705,18 @@ int mdss_mdp_pipe_queue_data(struct mdss_mdp_pipe *pipe,
 		 (ctl->mdata->mixer_switched)) || roi_changed;
 
 	/* apply changes that are common in case of multi rects only once */
-	if (params_changed && !delayed_programming) {
+#if defined(CONFIG_PXLW_IRIS3)
+	if (iris_has_HDRchange() || (params_changed && !delayed_programming)) {
 		bool is_realtime = !((ctl->intf_num == MDSS_MDP_NO_INTF)
 				|| pipe->mixer_left->rotator_mode);
+		if (iris_has_HDRchange() && (pipe->type == MDSS_MDP_PIPE_TYPE_VIG))
+			iris_add_HDRchange();
+#else
+	if (params_changed && !delayed_programming) {
+		bool is_realtime = !((ctl->intf_num == MDSS_MDP_NO_INTF)
+                                || pipe->mixer_left->rotator_mode);
 
+#endif
 		mdss_mdp_pipe_panic_vblank_signal_ctrl(pipe, false);
 		mdss_mdp_pipe_panic_signal_ctrl(pipe, false);
 

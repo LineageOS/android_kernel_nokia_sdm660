@@ -849,6 +849,10 @@ static void msm_vfe47_axi_enable_wm(void __iomem *vfe_base,
 		val |= 0x1;
 	else
 		val &= ~0x1;
+
+	trace_printk("%s:%d  wm_idx %d enable %d\n",__func__, __LINE__,
+		wm_idx,	enable);
+
 	msm_camera_io_w_mb(val,
 		vfe_base + VFE47_WM_BASE(wm_idx));
 }
@@ -1718,6 +1722,14 @@ void msm_vfe47_axi_cfg_wm_reg(
 	if (stream_info->frame_based)
 		val |= 0x2;
 	msm_camera_io_w(val, vfe_dev->vfe_base + wm_base + 0x14);
+	trace_printk("%s:%d state %d src %d stream id %d session_id %x frame_base %d\n",
+		__func__, __LINE__,
+		stream_info->state,
+		stream_info->stream_src,
+		stream_info->stream_id,
+		stream_info->session_id,
+		stream_info->frame_based);
+
 	if (!stream_info->frame_based) {
 		/* WR_IMAGE_SIZE */
 		val = ((msm_isp_cal_word_per_line(

@@ -793,7 +793,8 @@ static int rradc_check_status_ready_with_retry(struct rradc_chip *chip,
 static int rradc_read_channel_with_continuous_mode(struct rradc_chip *chip,
 			struct rradc_chan_prop *prop, u8 *buf)
 {
-	int rc = 0, ret = 0;
+	int rc = 0;
+  int ret = 0;
 	u16 status = 0;
 
 	rc = rradc_enable_continuous_mode(chip);

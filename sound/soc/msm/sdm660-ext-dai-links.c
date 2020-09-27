@@ -384,6 +384,40 @@ static struct snd_soc_dai_link msm_ext_tasha_fe_dai[] = {
 		.codec_dai_name = "tasha_cpe",
 		.codec_name = "tasha_codec",
 	},
+	/* Hostless USB purpose */
+	{
+		.name = "USB Audio Hostless",
+		.stream_name = "USB Audio Hostless",
+		.cpu_dai_name = "USBAUDIO_HOSTLESS",
+		.platform_name = "msm-pcm-hostless",
+		.dynamic = 1,
+		.dpcm_playback = 1,
+		.dpcm_capture = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			    SND_SOC_DPCM_TRIGGER_POST},
+		.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
+		.ignore_suspend = 1,
+		.ignore_pmdown_time = 1,
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.codec_name = "snd-soc-dummy",
+	},
+	/* Tertiary MI2S RX DAI Link */
+	{
+		.name = "TERT_MI2S_RX Hostless",
+		.stream_name = "TERT_MI2S_RX Hostless",
+		.cpu_dai_name = "TERT_MI2S_RX_HOSTLESS",
+		.platform_name = "msm-pcm-hostless",
+		.dynamic = 1,
+		.dpcm_playback = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			    SND_SOC_DPCM_TRIGGER_POST},
+		.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
+		.ignore_suspend = 1,
+		/* this dainlink has playback support */
+		.ignore_pmdown_time = 1,
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.codec_name = "snd-soc-dummy",
+	},
 };
 
 static struct snd_soc_dai_link msm_ext_tavil_fe_dai[] = {
@@ -1654,8 +1688,8 @@ static struct snd_soc_dai_link msm_mi2s_be_dai_links[] = {
 		.stream_name = "Tertiary MI2S Playback",
 		.cpu_dai_name = "msm-dai-q6-mi2s.2",
 		.platform_name = "msm-pcm-routing",
-		.codec_name = "msm-stub-codec.1",
-		.codec_dai_name = "msm-stub-rx",
+		.codec_name = "tfa98xx.7-0034",
+		.codec_dai_name = "tfa98xx-aif-7-34",
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.be_id = MSM_BACKEND_DAI_TERTIARY_MI2S_RX,

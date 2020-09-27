@@ -1,0 +1,55 @@
+/* C1N preEVT SDM660 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v9.dtsi"
+
+/* SYSTEM parts */
+#include "common/system-preEVT-660.dtsi"
+
+/* Keypad parts */
+#include "misc/keypad.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "charger/charger-evt1.dtsi"
+#include "charger/tas-setting.dtsi"
+
+/* Audio */
+/* #include "audio/audio-preEVT.dtsi" */
+
+/* Camera */
+#include "camera/camera-tas-evt.dtsi"
+
+/* Haptic */
+#include "misc/haptics-drg.dtsi"
+
+/* LED */
+#include "misc/aw2015.dtsi"
+
+/* SD */
+#include "misc/sd-evb.dtsi"
+
+/* Fingerprint */
+#include "fingerprint/fingerprint-fpc1035-tas.dtsi"
+#include "fingerprint/fingerprint-focal9362-tas.dtsi"
+
+/* Sensor */
+/* NO HALL Sensor */
+
+/* Touch */
+#include "touch/touch-focaltech8719.dtsi"
+#include "touch/touch-gt915l-ctc.dtsi"
+#include "touch/touch-gt915l-ctc-drgch14.dtsi"
+
+/* LCM */
+#include "display/dsi-panel-fih-ctc-otm1911a-fhd-video.dtsi"
+#include "display/dsi-panel-fih-auo-otm1911a-fhd-video.dtsi"
+#include "display/dsi-panel-fih-ft8719-1080p-video.dtsi"

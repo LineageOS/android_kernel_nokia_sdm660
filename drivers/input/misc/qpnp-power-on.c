@@ -860,10 +860,12 @@ qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 	if (!cfg->old_state && !key_status) {
 		input_report_key(pon->pon_input, cfg->key_code, 1);
 		input_sync(pon->pon_input);
+		pr_info("PMIC input: code=%d, sts=1~\n", cfg->key_code);
 	}
 
 	input_report_key(pon->pon_input, cfg->key_code, key_status);
 	input_sync(pon->pon_input);
+	pr_info("PMIC input: code=%d, sts=0x%hhx\n", cfg->key_code, key_status);
 
 	cfg->old_state = !!key_status;
 

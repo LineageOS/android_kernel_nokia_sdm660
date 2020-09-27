@@ -1,0 +1,20 @@
+/ {
+	/delete-node/ qcom,battery-data;
+	fih_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "fg-gen3-batterydata-ALT-3000mah-100k-DRG.dtsi"
+		#include "fg-gen3-batterydata-coslight-3000mah-200k-DRG.dtsi"
+		#include "fg-gen3-batterydata-McNair-3000mah-300k-DRG.dtsi"
+	};
+};
+
+&pm660_fg {
+	qcom,fg-sys-term-current = <(-150)>;	/* 100mA + 25mA */
+	fih,check-external-rsense;
+	fih,use-external-resense = <0>; /* 0:internal, 1: external, 2:PM660+SMB */
+};
+
+&pm660_charger {
+	fih,dcp-2a-function-enable;
+	fih,lcm-on-off-cur-control;
+};

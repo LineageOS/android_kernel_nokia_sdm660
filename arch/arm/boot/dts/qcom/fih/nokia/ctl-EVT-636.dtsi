@@ -1,0 +1,63 @@
+/* DRG preEVT SDM636 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v8.dtsi"
+
+/* SYSTEM parts */
+#include "common/system-preEVT-630.dtsi"
+
+/* External LDO control */
+#include "ext-reguator/fixed-regulator-EVT-v1.dtsi"
+
+/* Keypad parts */
+#include "misc/keypad.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "charger/charger-evt1.dtsi"
+#include "charger/ctl-setting.dtsi"
+
+/* Audio */
+
+/* Camera */
+#include "camera/camera-ctl-evt.dtsi"
+
+/* Haptic */
+#include "misc/haptics-drg.dtsi"
+
+/* SD */
+#include "misc/sd-evb.dtsi"
+
+/* Fingerprint */
+#include "fingerprint/fingerprint-gf5288-evt.dtsi"
+
+/* Sensor */
+/* NO HALL Sensor */
+
+/* Touch */
+/* SW4-HL-TP-BringUpGT915L-00*_20180119 */
+#include "touch/touch-gt915l-ctc-ctl.dtsi"
+
+/* LCM */
+/* SW4-HL-Display-CTL-JD9522Z-BringUp-00+{_20180417 */
+#include "display/dsi-panel-fih-ctl-ctc-otm1911a-fhd-video.dtsi"
+#include "display/dsi-panel-fih-ctl-auo-otm1911a-fhd-video.dtsi"
+#include "display/dsi-panel-fih-ctl-ctc-jd9522z-fhd-video.dtsi"
+/* SW4-HL-Display-CTL-JD9522Z-BringUp-00+}_20180417 */
+
+/* HDR */
+#include "display/pxlw-iris3-cfg-fih-ctl-ctc-otm1911a-fhd-video.dtsi"
+#include "display/pxlw-iris3-cfg-fih-ctl-ctc-jd9522z-fhd-video.dtsi"
+
+
+/* NFC */
+/* Samsung */
+#include "samsungnfc/ctl_avl8895_i2c.dtsi"

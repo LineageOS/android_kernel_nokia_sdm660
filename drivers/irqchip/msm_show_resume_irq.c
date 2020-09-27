@@ -15,7 +15,13 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 
+//CORE-PK-SuspendLog-00+[
+#ifdef CONFIG_FIH_SUSPEND_RESUME_LOG
+int msm_show_resume_irq_mask = 0x1;
+#else
 int msm_show_resume_irq_mask;
+#endif
+//CORE-PK-SuspendLog-00+]
 
 module_param_named(
 	debug_mask, msm_show_resume_irq_mask, int, S_IRUGO | S_IWUSR | S_IWGRP

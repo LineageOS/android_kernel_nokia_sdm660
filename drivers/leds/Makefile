@@ -75,5 +75,8 @@ obj-$(CONFIG_LEDS_QPNP_HAPTICS)	+= leds-qpnp-haptics.o
 # LED SPI Drivers
 obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
 
+#for AW2015 LED Driver
+obj-$(CONFIG_LEDS_AW2015) += leds-aw2015.o
+
 # LED Triggers
 obj-$(CONFIG_LEDS_TRIGGERS)		+= trigger/

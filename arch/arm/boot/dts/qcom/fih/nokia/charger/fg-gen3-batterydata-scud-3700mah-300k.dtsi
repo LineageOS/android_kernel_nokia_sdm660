@@ -1,0 +1,72 @@
+
+qcom,3243289_fih_he347scud_3700mah_averaged_masterslave_dec21st2017 {
+	qcom, = <24>;
+	/* #3243289_FIH_HE347scud_3700mAh_averaged_MasterSlave_Dec21st2017*/
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,nom-batt-capacity-mah = <3700>;
+	qcom,fastchg-current-ma = <3400>;
+	qcom,batt-id-kohm = <300>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "B2N_scud_3700mah_300k";
+	qcom,checksum = <0x56BE>;
+	qcom,gui-version = "PM660GUI - 0.0.0.45";
+	qcom,fg-profile-data = [
+		 02 1F 61 06
+		 82 03 81 F4
+		 E4 1C B3 FB
+		 F5 0D 56 0A
+		 E8 17 BE 23
+		 78 44 47 5A
+		 75 00 00 00
+		 10 00 00 00
+		 00 00 00 9C
+		 74 CD 13 AB
+		 1E 00 08 00
+		 61 DA 0D DC
+		 8D 05 98 01
+		 18 15 FD 02
+		 75 F5 F1 32
+		 21 06 09 20
+		 27 00 14 00
+		 6E 1F 0C 06
+		 02 0A B5 FD
+		 C9 1C E8 02
+		 0E 0C 25 12
+		 86 18 F9 23
+		 BD 4D 8E 5B
+		 68 00 00 00
+		 0D 00 00 00
+		 00 00 76 D5
+		 58 CA 3E CA
+		 17 00 00 00
+		 C4 E2 0D DC
+		 4F FC 1D 01
+		 3B 06 32 02
+		 B2 01 75 22
+		 C0 33 CC FF
+		 07 10 00 00
+		 0D 0F 66 46
+		 17 00 40 00
+		 8E 01 0A FA
+		 FF 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+	];
+};

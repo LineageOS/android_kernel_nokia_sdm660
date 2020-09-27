@@ -29,6 +29,15 @@
 #include <sound/adsp_err.h>
 #include <linux/qdsp6v2/apr_tal.h>
 #include <sound/q6core.h>
+/*FIH-Nokia-TAS2560 added PP-060356*/
+#include <sound/smart_amp.h>
+
+/*FIH-Nokia-TAS2560 added PP-060356*/
+#ifdef SMART_AMP
+/*Forward Decleration*/
+static int32_t smartamp_algo_callback(uint32_t opcode, uint32_t *payload,
+				    uint32_t payload_size);
+#endif
 
 #define WAKELOCK_TIMEOUT	5000
 enum {
@@ -128,6 +137,10 @@ struct afe_ctl {
 	bool alloced_rddma[AFE_MAX_RDDMA];
 	int num_alloced_wrdma;
 	bool alloced_wrdma[AFE_MAX_WRDMA];
+/*FIH-Nokia-TAS2560 added PP-060356*/
+#ifdef SMART_AMP
+	struct afe_smartamp_calib_get_resp smart_amp_calib_data;
+#endif
 };
 
 static atomic_t afe_ports_mad_type[SLIMBUS_PORT_LAST - SLIMBUS_0_RX];
@@ -135,7 +148,7 @@ static unsigned long afe_configured_cmd;
 
 static struct afe_ctl this_afe;
 
-#define TIMEOUT_MS 1000
+#define TIMEOUT_MS 2000
 #define Q6AFE_MAX_VOLUME 0x3FFF
 
 static int pcm_afe_instance[2];
@@ -601,6 +614,22 @@ static int32_t afe_callback(struct apr_client_data *data, void *priv)
 			if (sp_make_afe_callback(data->opcode, data->payload,
 						 data->payload_size))
 				return -EINVAL;
+/*FIH-Nokia-TAS2560 added PP-060356*/
+#ifdef SMART_AMP
+			if((payload[1] == AFE_SMARTAMP_MODULE_RX)||(payload[1] == AFE_SMARTAMP_MODULE_TX))
+			{
+				if (smartamp_algo_callback(data->opcode, data->payload,
+						 data->payload_size))
+					return -EINVAL;
+			}
+			else if (sp_make_afe_callback(data->opcode, data->payload,
+						 data->payload_size))
+				return -EINVAL;
+#else
+			if (sp_make_afe_callback(data->opcode, data->payload,
+						 data->payload_size))
+				return -EINVAL;
+#endif
 		}
 		wake_up(&this_afe.wait[data->token]);
 	} else if (data->opcode == AFE_CMDRSP_REQUEST_LPASS_RESOURCES) {
@@ -4118,6 +4147,145 @@ int afe_pseudo_port_start_nowait(u16 port_id)
 	}
 	return 0;
 }
+
+/*FIH-Nokia added PP-060356*/
+#ifdef SMART_AMP
+static int32_t smartamp_algo_callback(uint32_t opcode, uint32_t *payload,
+				    uint32_t payload_size)
+{
+	struct param_hdr_v3 param_hdr;
+	u32 *data_dest = NULL;
+	u32 *data_start = NULL;
+
+	pr_debug("[Smartamp:%s] ", __func__);
+	memset(&param_hdr, 0, sizeof(param_hdr));
+
+	/* Set command specific details */
+	switch (opcode) {
+	case AFE_PORT_CMDRSP_GET_PARAM_V2:
+		param_hdr.module_id = payload[1];
+		param_hdr.instance_id = INSTANCE_ID_0;
+		param_hdr.param_id = payload[2];
+		param_hdr.param_size = payload[3];
+		data_start = &payload[4];
+		break;
+	case AFE_PORT_CMDRSP_GET_PARAM_V3:
+		memcpy(&param_hdr, &payload[1], sizeof(struct param_hdr_v3));
+		data_start = &payload[5];
+		break;
+	default:
+		pr_err("TI-SmartPA: %s: Unrecognized command %d\n", __func__, opcode);
+		return -EINVAL;
+	}
+	data_dest = (u32 *) &this_afe.smart_amp_calib_data;
+
+	data_dest[0] = payload[0];
+	memcpy(&data_dest[1], &param_hdr, sizeof(struct param_hdr_v3));
+	memcpy(&data_dest[5], data_start, param_hdr.param_size);
+
+	if (!data_dest[0]) {
+		atomic_set(&this_afe.state, 0);
+	} else {
+		pr_debug("TI-SmartPA: %s: status: %d", __func__, data_dest[0]);
+		atomic_set(&this_afe.state, -1);
+	}
+
+	return 0;
+}
+
+int afe_smartamp_get_calib_data(struct afe_smartamp_get_calib *calib_resp,
+		uint32_t param_id, uint32_t module_id)
+{
+	int ret = -EINVAL;
+	struct param_hdr_v3 param_hdr;
+	int port = TAS_RX_PORT;
+
+	if (!calib_resp) {
+		pr_err("TI-SmartPA: %s: Invalid params\n", __func__);
+		goto fail_cmd;
+	}
+	
+	pr_info("TI-SmartPA: %s: module id : 0x%x ", __func__, module_id);
+	if (module_id == AFE_SMARTAMP_MODULE_RX) {
+		port = TAS_RX_PORT;
+	} else if (module_id == AFE_SMARTAMP_MODULE_TX) {
+		port = TAS_TX_PORT;
+	} else {
+		pr_err("TI-SmartPA: %s: Invalid module id 0x%x\n", __func__, module_id);
+		return ret;
+	}
+
+	memset(&param_hdr, 0, sizeof(param_hdr));
+	param_hdr.module_id = module_id;
+	param_hdr.instance_id = INSTANCE_ID_0;
+	param_hdr.param_id = param_id;
+	param_hdr.param_size = sizeof(struct afe_smartamp_get_calib);
+
+	ret = q6afe_get_params(port, NULL, &param_hdr);
+	if (ret < 0) {
+		pr_err("TI-SmartPA: %s: get param port 0x%x param id[0x%x]failed %d\n",
+		       __func__, port, param_hdr.param_id, ret);
+		goto fail_cmd;
+	}
+	memcpy(&calib_resp->res_cfg, &this_afe.smart_amp_calib_data.res_cfg,
+		sizeof(this_afe.calib_data.res_cfg));
+	ret = 0;
+fail_cmd:
+	return ret;
+}
+
+int afe_smartamp_set_calib_data(uint32_t param_id,struct afe_smartamp_set_params_t *prot_config,
+		uint8_t length, uint32_t module_id)
+{
+	int ret = -EINVAL;
+	int port = TAS_RX_PORT;
+	struct param_hdr_v3 param_hdr;
+	u8 *packed_param_data = NULL;
+	u32 packed_param_size = 0;
+	u32 single_param_size = 0;
+
+	if (!prot_config) {
+		pr_err("TI-SmartPA: %s: Invalid params\n", __func__);
+		return ret;
+	}
+	pr_info("TI-SmartPA: %s: module id : 0x%x ", __func__, module_id);
+	if (module_id == AFE_SMARTAMP_MODULE_RX) {
+		port = TAS_RX_PORT;
+	} else if (module_id == AFE_SMARTAMP_MODULE_TX) {
+		port = TAS_TX_PORT;
+	} else {
+		pr_err("TI-SmartPA: %s: Invalid module id 0x%x\n", __func__, module_id);
+		return ret;
+	}
+	packed_param_size =
+		sizeof(param_hdr) + sizeof(prot_config);
+	packed_param_data = kzalloc(packed_param_size, GFP_KERNEL);
+	if (!packed_param_data)
+		return -ENOMEM;
+	packed_param_size = 0;
+
+	param_hdr.module_id = module_id;
+	param_hdr.instance_id = INSTANCE_ID_0;
+	param_hdr.param_id = param_id;
+	param_hdr.param_size = length;
+
+	ret = q6common_pack_pp_params(packed_param_data, &param_hdr,
+				      (u8 *) prot_config, &single_param_size);
+	if (ret) {
+		pr_err("TI-SmartPA: %s: Failed to pack param data, error %d\n", __func__,
+		       ret);
+		goto done;
+	}
+	packed_param_size += single_param_size;
+
+	ret = q6afe_set_params(port, q6audio_get_port_index(port),
+			       NULL, packed_param_data, packed_param_size);
+done:
+	kfree(packed_param_data);
+	return ret;
+}
+
+#endif
 
 int afe_start_pseudo_port(u16 port_id)
 {

@@ -1,0 +1,49 @@
+&pm660l_3 {
+    qcom,leds@d000 {
+	    status = "disabled";
+	};
+};
+
+&i2c_7 {
+    status = "okay";
+	aw2015@64 {/* add for breath led. */
+		compatible = "awinic,aw2015_led";
+		reg = <0x64>;
+
+		aw2015,red {
+			aw2015,name = "red";
+			aw2015,id = <0>;
+			aw2015,imax = <0>;
+			aw2015,led-current = <255>;
+			aw2015,max-brightness = <255>;
+			aw2015,rise-time-ms = <4>;
+			aw2015,hold-time-ms = <6>;
+			aw2015,fall-time-ms = <4>;
+			aw2015,off-time-ms = <8>;
+		};
+
+		aw2015,green {
+			aw2015,name = "green";
+			aw2015,id = <1>;
+			aw2015,imax = <0>;
+			aw2015,led-current = <255>;
+			aw2015,max-brightness = <255>;
+			aw2015,rise-time-ms = <4>;
+			aw2015,hold-time-ms = <6>;
+			aw2015,fall-time-ms = <4>;
+			aw2015,off-time-ms = <8>;
+		};
+		
+		aw2015,blue {
+			aw2015,name = "blue";
+			aw2015,id = <2>;
+			aw2015,imax = <0>;
+			aw2015,led-current = <255>;
+			aw2015,max-brightness = <255>;
+			aw2015,rise-time-ms = <4>;
+			aw2015,hold-time-ms = <6>;
+			aw2015,fall-time-ms = <4>;
+			aw2015,off-time-ms = <8>;
+		};
+	};
+};

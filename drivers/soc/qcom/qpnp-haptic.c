@@ -172,7 +172,13 @@
 	(hap->init_drive_period_code = (hap->init_drive_period_code * \
 		(1000 - rc_clk_err_percent_x10)) / 1000)
 
+#define BBOX_HAPTIC_PROBE_FAIL do {printk("BBox::UEC;19::0\n");} while (0);
+#define BBOX_HAPTIC_SET_FAIL do {printk("BBox::UEC;19::2\n");} while (0);
+#define BBOX_HAPTIC_WRITE_REGISTER_FAIL do {printk("BBox::UEC;19::7\n");} while (0);
+#define BBOX_HAPTIC_ENABLE_FAIL do {printk("BBox::UEC;19::3\n");} while (0);
+
 u32 adjusted_lra_play_rate_code[ADJUSTED_LRA_PLAY_RATE_CODE_ARRSIZE];
+
 
 /* haptic debug register set */
 static u8 qpnp_hap_dbg_regs[] = {
@@ -443,7 +449,10 @@ static int qpnp_hap_write_mult_reg(struct qpnp_hap *hap, u16 addr, u8 *val,
 	spin_lock_irqsave(&hap->bus_lock, flags);
 	rc = regmap_bulk_write(hap->regmap, addr, val, len);
 	if (rc < 0)
+	{
+		BBOX_HAPTIC_WRITE_REGISTER_FAIL
 		pr_err("Error writing address: %X - ret %X\n", addr, rc);
+	}
 
 	spin_unlock_irqrestore(&hap->bus_lock, flags);
 	return rc;
@@ -457,11 +466,16 @@ static int qpnp_hap_write_reg(struct qpnp_hap *hap, u16 addr, u8 val)
 	spin_lock_irqsave(&hap->bus_lock, flags);
 	rc = regmap_write(hap->regmap, addr, val);
 	if (rc < 0)
+	{
+		BBOX_HAPTIC_WRITE_REGISTER_FAIL
 		pr_err("Error writing address: %X - ret %X\n", addr, rc);
+	}
 
 	spin_unlock_irqrestore(&hap->bus_lock, flags);
 	if (!rc)
+	{
 		pr_debug("wrote: HAP_0x%x = 0x%x\n", addr, val);
+	}
 	return rc;
 }
 
@@ -644,7 +658,7 @@ static irqreturn_t qpnp_hap_sc_irq(int irq, void *_hap)
 	int rc;
 	u8 val;
 
-	pr_debug("Short circuit detected\n");
+	pr_err("Short circuit detected\n");
 
 	if (hap->sc_count < SC_MAX_COUNT) {
 		qpnp_hap_read_reg(hap, QPNP_HAP_STATUS(hap->base), &val);
@@ -661,6 +675,7 @@ static irqreturn_t qpnp_hap_sc_irq(int irq, void *_hap)
 		rc = qpnp_hap_write_reg(hap, QPNP_HAP_EN_CTL_REG(hap->base),
 			val);
 		pr_err("Haptics disabled permanently due to short circuit\n");
+		BBOX_HAPTIC_ENABLE_FAIL
 	}
 
 	return IRQ_HANDLED;
@@ -1973,15 +1988,16 @@ static void update_lra_frequency(struct qpnp_hap *hap)
 		((play_rate_code <= hap->drive_period_code_min_limit) ||
 		(play_rate_code >= hap->drive_period_code_max_limit))) {
 		if (val & AUTO_RES_ERR_BIT)
-			pr_debug("Auto-resonance error %x\n", val);
+			pr_err("Auto-resonance error %x\n", val);
 		else
-			pr_debug("play rate %x out of bounds [min: 0x%x, max: 0x%x]\n",
+			pr_err("play rate %x out of bounds [min: 0x%x, max: 0x%x]\n",
 				play_rate_code,
 				hap->drive_period_code_min_limit,
 				hap->drive_period_code_max_limit);
 		rc = qpnp_hap_auto_res_enable(hap, 0);
 		if (rc < 0)
-			pr_debug("Auto-resonance write failed\n");
+			pr_err("Auto-resonance write failed\n");
+
 		return;
 	}
 
@@ -2058,15 +2074,26 @@ static int qpnp_hap_set(struct qpnp_hap *hap, bool on)
 
 			rc = qpnp_hap_mod_enable(hap, on);
 			if (rc < 0)
+			{
+				BBOX_HAPTIC_SET_FAIL
 				return rc;
+			}
 
 			rc = qpnp_hap_play(hap, on);
 			if (rc < 0)
 				return rc;
 
+#if 0 //Enable fixed pwm frequency
+			rc = qpnp_hap_auto_res_enable(hap, 0);
+#else
 			rc = qpnp_hap_auto_res_enable(hap, 1);
+#endif
+
 			if (rc < 0)
+			{
+				BBOX_HAPTIC_SET_FAIL
 				return rc;
+			}
 
 			if (is_sw_lra_auto_resonance_control(hap)) {
 				/*
@@ -2082,7 +2109,10 @@ static int qpnp_hap_set(struct qpnp_hap *hap, bool on)
 		} else {
 			rc = qpnp_hap_play(hap, on);
 			if (rc < 0)
+			{
+				BBOX_HAPTIC_SET_FAIL
 				return rc;
+			}
 
 			if (is_sw_lra_auto_resonance_control(hap) &&
 				(hap->status_flags & AUTO_RESONANCE_ENABLED))
@@ -2111,6 +2141,9 @@ static int qpnp_hap_auto_mode_config(struct qpnp_hap *hap, int time_ms)
 
 	/* For now, this is for LRA only */
 	if (hap->act_type == QPNP_HAP_ERM)
+		return 0;
+
+	if (!time_ms)
 		return 0;
 
 	old_ares_mode = hap->ares_cfg.auto_res_mode;
@@ -2276,11 +2309,15 @@ static void qpnp_hap_td_enable(struct timed_output_dev *dev, int time_ms)
 
 		time_ms = (time_ms > hap->timeout_ms ?
 				 hap->timeout_ms : time_ms);
-		hap->play_time_ms = time_ms;
-		hrtimer_start(&hap->hap_timer,
-				ktime_set(time_ms / 1000,
-				(time_ms % 1000) * 1000000),
-				HRTIMER_MODE_REL);
+		if (!time_ms) {
+			hap->state = 0;
+		} else {
+			hap->play_time_ms = time_ms;
+			hrtimer_start(&hap->hap_timer,
+					ktime_set(time_ms / 1000,
+					(time_ms % 1000) * 1000000),
+					HRTIMER_MODE_REL);
+		}
 	}
 
 	mutex_unlock(&hap->lock);
@@ -2359,8 +2396,11 @@ static void qpnp_hap_worker(struct work_struct *work)
 	if (hap->vcc_pon && hap->state && !hap->vcc_pon_enabled) {
 		rc = regulator_enable(hap->vcc_pon);
 		if (rc < 0)
+		{
+			BBOX_HAPTIC_SET_FAIL
 			pr_err("could not enable vcc_pon regulator rc=%d\n",
 				rc);
+		}
 		else
 			hap->vcc_pon_enabled = true;
 	}
@@ -2380,8 +2420,11 @@ static void qpnp_hap_worker(struct work_struct *work)
 	if (hap->vcc_pon && !hap->state && hap->vcc_pon_enabled) {
 		rc = regulator_disable(hap->vcc_pon);
 		if (rc)
+		{
+			BBOX_HAPTIC_SET_FAIL
 			pr_err("could not disable vcc_pon regulator rc=%d\n",
 				rc);
+		}
 		else
 			hap->vcc_pon_enabled = false;
 	}
@@ -2548,7 +2591,7 @@ static int qpnp_hap_config(struct qpnp_hap *hap)
 			LRA_DRIVE_PERIOD_POS_ERR(hap, rc_clk_err_percent_x10);
 	}
 
-	pr_debug("Play rate code 0x%x\n", hap->init_drive_period_code);
+	pr_err("Play rate code 0x%x\n", hap->init_drive_period_code);
 
 	val = hap->init_drive_period_code & QPNP_HAP_RATE_CFG1_MASK;
 	rc = qpnp_hap_write_reg(hap, QPNP_HAP_RATE_CFG1_REG(hap->base), val);
@@ -2983,7 +3026,10 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 
 	hap = devm_kzalloc(&pdev->dev, sizeof(*hap), GFP_KERNEL);
 	if (!hap)
+	{
+		BBOX_HAPTIC_PROBE_FAIL
 		return -ENOMEM;
+	}
 		hap->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 		if (!hap->regmap) {
 			pr_err("Couldn't get parent's regmap\n");
@@ -2994,6 +3040,7 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(pdev->dev.of_node, "reg", &base);
 	if (rc < 0) {
+		BBOX_HAPTIC_PROBE_FAIL
 		pr_err("Couldn't find reg in node = %s rc = %d\n",
 			pdev->dev.of_node->full_name, rc);
 		return rc;
@@ -3004,12 +3051,14 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 
 	rc = qpnp_hap_get_pmic_revid(hap);
 	if (rc) {
+		BBOX_HAPTIC_PROBE_FAIL
 		pr_err("Unable to check PMIC version rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = qpnp_hap_parse_dt(hap);
 	if (rc) {
+		BBOX_HAPTIC_PROBE_FAIL
 		pr_err("DT parsing failed\n");
 		return rc;
 	}
@@ -3018,6 +3067,7 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 	rc = qpnp_hap_config(hap);
 	if (rc) {
 		pr_err("hap config failed\n");
+		BBOX_HAPTIC_PROBE_FAIL
 		return rc;
 	}
 
@@ -3044,6 +3094,7 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 	rc = timed_output_dev_register(&hap->timed_dev);
 	if (rc < 0) {
 		pr_err("timed_output registration failed\n");
+		BBOX_HAPTIC_PROBE_FAIL
 		goto timed_output_fail;
 	}
 
@@ -3052,6 +3103,7 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 				&qpnp_hap_attrs[i].attr);
 		if (rc < 0) {
 			pr_err("sysfs creation failed\n");
+			BBOX_HAPTIC_PROBE_FAIL
 			goto sysfs_fail;
 		}
 	}
@@ -3061,6 +3113,7 @@ static int qpnp_haptic_probe(struct platform_device *pdev)
 		if (IS_ERR(vcc_pon)) {
 			rc = PTR_ERR(vcc_pon);
 			pr_err("regulator get failed vcc_pon rc=%d\n", rc);
+			BBOX_HAPTIC_PROBE_FAIL
 			goto sysfs_fail;
 		}
 		hap->vcc_pon = vcc_pon;

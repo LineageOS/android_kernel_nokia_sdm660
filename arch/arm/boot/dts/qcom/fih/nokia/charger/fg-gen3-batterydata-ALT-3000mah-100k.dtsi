@@ -1,0 +1,71 @@
+qcom,C1N_3000mah_100k {
+	qcom, = <24>;
+	/* #2854679_FIH_SAT660_3000mAh_averaged_MasterSlave_Apr19th2017*/
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,nom-batt-capacity-mah = <3000>;
+	qcom,fastchg-current-ma = <3000>;
+	qcom,batt-id-kohm = <100>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "C1N_alt_3000mah_100k";
+	qcom,checksum = <0xEC54>;
+	qcom,gui-version = "PM660GUI - 0.0.0.44";
+	qcom,fg-profile-data = [
+		 8E 1F 88 05
+		 9D 0A 1F 06
+		 84 1D 81 F4
+		 74 12 F8 1D
+		 8F 19 CF 1B
+		 84 3D 2F 4A
+		 52 00 00 00
+		 16 00 00 00
+		 00 00 C7 BC
+		 02 C5 27 B2
+		 1A 00 08 00
+		 36 E2 11 E4
+		 E1 06 8A 00
+		 8B FB D2 12
+		 1F FD 0D 32
+		 18 06 09 20
+		 27 00 14 00
+		 D1 1F 6D 05
+		 A7 0A 1A 06
+		 62 1D 57 00
+		 92 0A 2D 15
+		 4B 19 BC 22
+		 A9 45 B5 52
+		 54 00 00 00
+		 0E 00 00 00
+		 00 00 CA CC
+		 06 BB 34 BA
+		 19 00 00 00
+		 D4 EA 11 E4
+		 02 07 CF EB
+		 FE E4 1A 0A
+		 1B F5 3C 1B
+		 B6 33 CC FF
+		 07 10 00 00
+		 0F 0C 66 46
+		 19 00 40 00
+		 CC 01 0A FA
+		 FF 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+		 00 00 00 00
+	];
+};

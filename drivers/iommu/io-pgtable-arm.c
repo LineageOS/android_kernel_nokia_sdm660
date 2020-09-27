@@ -492,12 +492,8 @@ static int __arm_lpae_map(struct arm_lpae_io_pgtable *data, unsigned long iova,
 		if (cfg->quirks & IO_PGTABLE_QUIRK_ARM_NS)
 			pte |= ARM_LPAE_PTE_NSTABLE;
 		__arm_lpae_set_pte(ptep, pte, cfg);
-	} else if (!iopte_leaf(pte, lvl)) {
-		cptep = iopte_deref(pte, data);
 	} else {
-		/* We require an unmap first */
-		WARN_ON(!selftest_running);
-		return -EEXIST;
+		cptep = iopte_deref(pte, data);
 	}
 
 	/* Rinse, repeat */

@@ -1,0 +1,26 @@
+#include <dt-bindings/input/ti-drv260x.h> //TI drv2605L include header
+
+&i2c_7 {
+        status = "okay";
+        haptics: haptics@5a {
+                       compatible = "ti,drv2605l";
+                       reg = <0x5a>;
+                       //ti,use-enable;
+                       //ti,enable-gpio = <&msm_gpio 52 0x1>;
+                       //ti,use-interrupt;
+                       //ti,trigger-gpio = <&msm_gpio 102 0x1>;
+                       loop-mode = <0x01>;                            //CLOSE_LOOP
+                       rtp-format = <0x00>;                           //Signed
+                       bidir-input = <0x1>;                           //BiDirectional
+                       actuator-device-type = <0x01>;                 //LRA
+                       actuator-rated-voltage = /bits/ 8 <0x53>;      //2000*255/5600
+                       actuator-overdrive-voltage = /bits/ 8 <0x3E>;  //2400*255/5600
+                       actuator-library-sel = /bits/ 8 <0x06>;        //LRA_LIBRARY
+                       actuator-lra-freq = /bits/ 8 <150>;
+                       a2h-min-input-vol = /bits/ 8 <0x19>;
+                       a2h-max-input-vol = /bits/ 8 <0xff>;
+                       a2h-min-output-vol = /bits/ 8 <0x19>;
+                       a2h-max-output-vol = /bits/ 8 <0xff>;
+                       fih,enable-pattern;
+    };
+};

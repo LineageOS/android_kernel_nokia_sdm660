@@ -1039,7 +1039,10 @@ static const struct freq_tbl ftbl_mclk0_clk_src[] = {
 	F(9600000, P_CXO, 2, 0, 0),
 	F(16666667, P_GPLL0_OUT_MAIN_DIV, 2, 1, 9),
 	F(19200000, P_CXO, 1, 0, 0),
+	F(22000000, P_GPLL0_OUT_MAIN_DIV, 1, 11, 150), //ZZDC-keming: add for PL2 main camera desense.20170826
+	F(23076923, P_GPLL0_OUT_MAIN_DIV, 1, 2, 26),	//SW4-RL-Camera-front camera desence issue-00+_20170823
 	F(24000000, P_MMPLL10_PLL_OUT_MAIN, 1, 1, 24),
+	F(25000000, P_GPLL0_OUT_MAIN_DIV, 1, 1, 12),
 	F(33333333, P_GPLL0_OUT_MAIN_DIV, 1, 1, 9),
 	F(48000000, P_GPLL0_OUT_MAIN, 1, 2, 25),
 	F(66666667, P_GPLL0_OUT_MAIN, 1, 1, 9),

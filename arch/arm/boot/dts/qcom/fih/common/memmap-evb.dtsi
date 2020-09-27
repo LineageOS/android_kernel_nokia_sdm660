@@ -1,0 +1,21 @@
+/* ref: sdm660.dtsi */
+
+/ {
+	reserved-memory {
+		fih_nv: fih_nv@AC000000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0 0xAC000000 0 0x00800000>;
+		};
+		fih_mem: fih_mem@AC800000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0 0xAC800000 0 0x00300000>;
+		};
+		pstore_region: pstore_region@ACB00000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0 0xACB00000 0 0x00200000>;
+		};
+	};
+};

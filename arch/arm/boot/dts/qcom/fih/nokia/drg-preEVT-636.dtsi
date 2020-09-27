@@ -1,0 +1,53 @@
+/* DRG preEVT SDM636 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v7.dtsi"
+
+/* SYSTEM parts */
+#include "common/system-preEVT-630.dtsi"
+
+/* External LDO control */
+#include "ext-reguator/fixed-regulator-EVT-v1.dtsi"
+
+/* Keypad parts */
+#include "misc/keypad.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "charger/charger-evt1.dtsi"
+#include "charger/drg-setting.dtsi"
+
+/* Audio */
+
+/* Camera */
+#include "camera/camera-drg-evt.dtsi"
+
+/* Haptic */
+#include "misc/haptics-drg.dtsi"
+
+/* SD */
+#include "misc/sd-evb.dtsi"
+
+/* Fingerprint */
+#include "fingerprint/fingerprint-gf5288-evt.dtsi"
+
+/* Sensor */
+/* NO HALL Sensor */
+
+/* Touch */
+/* SW4-HL-TP-BringUpGT915L-00*_20180119 */
+#include "touch/touch-gt915l-ctc.dtsi"
+
+/* LCM */
+/* SW4-HL-Display-BringUpCTCOTM1911A-00*_20180116 */
+#include "display/dsi-panel-fih-ctc-otm1911a-fhd-video.dtsi"
+/* SW4-HL-Display-OTM1911A-AUO-BringUp-00+_20180221 */
+#include "display/dsi-panel-fih-auo-otm1911a-fhd-video.dtsi"

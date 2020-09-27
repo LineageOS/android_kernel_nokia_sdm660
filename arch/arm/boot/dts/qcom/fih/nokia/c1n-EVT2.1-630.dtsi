@@ -1,0 +1,10 @@
+/* C1N EVT 2.1 SDM630 */
+
+/* inherit preEVT Settings */
+#include "c1n-EVT2.0-630.dtsi"
+
+/* Common DT Info */
+#include "common/common_info_sdm_v3.dtsi"
+
+/* Diff */
+

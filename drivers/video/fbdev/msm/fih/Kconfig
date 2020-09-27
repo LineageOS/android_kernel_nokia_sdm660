@@ -1,0 +1,21 @@
+#
+# FIH Panel Feature
+#
+
+config FIH_PANEL_FEATURE
+	bool "FIH Panel feature support"
+	depends on ARM || ARM64
+	---help---
+	  Support for FIH display feature 
+
+config AOD_FEATURE
+	bool "Always on display feature support"
+	depends on FIH_PANEL_FEATURE
+	---help---
+	  Support for Always on display 
+
+config PANEL_POWER_CONTROL_FEATURE
+	bool "Display power control support"
+	depends on FIH_PANEL_FEATURE
+	---help---
+	  Support for display power control

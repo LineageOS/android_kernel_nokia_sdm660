@@ -830,6 +830,12 @@ static void msm_vfe40_axi_enable_wm(void __iomem *vfe_base,
 		val |= 0x1;
 	else
 		val &= ~0x1;
+
+	trace_printk("%s:%d  wm_idx %d enable %d\n",
+		__func__, __LINE__,
+		wm_idx,
+		enable);
+
 	msm_camera_io_w_mb(val,
 		vfe_base + VFE40_WM_BASE(wm_idx));
 }
@@ -1623,6 +1629,14 @@ static void msm_vfe40_axi_cfg_wm_reg(
 	} else {
 		burst_len = VFE40_BURST_LEN;
 	}
+
+	trace_printk("%s:%d state %d src %d stream id %d session_id %x frame_base %d\n",
+	__func__, __LINE__,
+	stream_info->state,
+	stream_info->stream_src,
+	stream_info->stream_id,
+	stream_info->session_id,
+	stream_info->frame_based);
 
 	if (!stream_info->frame_based) {
 		msm_camera_io_w(0x0, vfe_dev->vfe_base + wm_base);

@@ -85,12 +85,11 @@ static struct step_chg_info *the_chip;
 static struct step_chg_cfg step_chg_config = {
 	.psy_prop	= POWER_SUPPLY_PROP_VOLTAGE_NOW,
 	.prop_name	= "VBATT",
-	.hysteresis	= 100000, /* 100mV */
+	.hysteresis	= 20000, /* 100mV */
 	.fcc_cfg	= {
 		/* VBAT_LOW	VBAT_HIGH	FCC */
-		{3600000,	4000000,	3000000},
-		{4001000,	4200000,	2800000},
-		{4201000,	4400000,	2000000},
+		{3000000,	4100000,	2000000},
+		{4101000,	4400000,	1200000},
 	},
 	/*
 	 *	SOC STEP-CHG configuration example.
@@ -121,10 +120,9 @@ static struct jeita_fcc_cfg jeita_fcc_config = {
 	.hysteresis	= 10, /* 1degC hysteresis */
 	.fcc_cfg	= {
 		/* TEMP_LOW	TEMP_HIGH	FCC */
-		{0,		100,		600000},
-		{101,		200,		2000000},
-		{201,		450,		3000000},
-		{451,		550,		600000},
+ 		{0,		150,		600000},
+ 		{151,		450,		2000000},
+ 		{451,		550,		600000},
 	},
 };
 
@@ -134,11 +132,114 @@ static struct jeita_fv_cfg jeita_fv_config = {
 	.hysteresis	= 10, /* 1degC hysteresis */
 	.fv_cfg		= {
 		/* TEMP_LOW	TEMP_HIGH	FCC */
-		{0,		100,		4200000},
-		{101,		450,		4400000},
-		{451,		550,		4200000},
+ 		{0,		150,		4100000},
+		{151,		450,		4400000},
+ 		{451,		550,		4100000},
 	},
 };
+
+int fih_set_step_chg_hysteresis(int hysteresis, int mode)
+{
+	if(hysteresis < 0)
+		return -1;
+
+	switch(mode) {
+	case STEP_CHG_CFG:
+		step_chg_config.hysteresis = hysteresis;
+		break;
+	case JEITA_FCC_CFG:
+		jeita_fcc_config.hysteresis = hysteresis;
+		break;
+	case JEITA_FV_CFG:
+		jeita_fv_config.hysteresis = hysteresis;
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+int fih_set_step_chg_cfg(int *cfg, int cfg_len, int mode)
+{
+	int i =0;
+
+	if(cfg_len > MAX_STEP_CHG_ENTRIES)
+		return -1;
+
+	switch(mode) {
+	case STEP_CHG_CFG:
+		for(i=0; i < cfg_len; i++)
+		{
+			step_chg_config.fcc_cfg[i].low_threshold = cfg[i*3];
+			step_chg_config.fcc_cfg[i].high_threshold = cfg[i*3 + 1];
+			step_chg_config.fcc_cfg[i].value = cfg[i*3 + 2];
+		}
+		break;
+	case JEITA_FCC_CFG:
+		for(i=0; i < cfg_len; i++)
+		{
+			jeita_fcc_config.fcc_cfg[i].low_threshold = cfg[i*3];
+			jeita_fcc_config.fcc_cfg[i].high_threshold = cfg[i*3 + 1];
+			jeita_fcc_config.fcc_cfg[i].value = cfg[i*3 + 2];
+		}
+		break;
+	case JEITA_FV_CFG:
+		for(i=0; i < cfg_len; i++)
+		{
+			jeita_fv_config.fv_cfg[i].low_threshold = cfg[i*3];
+			jeita_fv_config.fv_cfg[i].high_threshold = cfg[i*3 + 1];
+			jeita_fv_config.fv_cfg[i].value = cfg[i*3 + 2];
+		}
+		break;
+	default:
+		break;
+	}
+	return 0;
+
+}
+
+void fih_dump_cfg(void)
+{
+	int i =0;
+	
+	pr_err("sw step charging cfg dump: \n");
+	if(step_chg_config.psy_prop == POWER_SUPPLY_PROP_VOLTAGE_NOW)
+		pr_err("    .psy_prop = POWER_SUPPLY_PROP_VOLTAGE_NOW\n");
+	else
+		pr_err("    .psy_prop = unknow\n");
+	pr_err("    .prop_name = %s\n", step_chg_config.prop_name);
+	pr_err("    .hysteresis = %d\n", step_chg_config.hysteresis);
+	pr_err("    .fcc_cfg = { \n");
+	for(i=0;i<MAX_STEP_CHG_ENTRIES; i++)
+		pr_err("        {%d, %d, %d}\n", step_chg_config.fcc_cfg[i].low_threshold, step_chg_config.fcc_cfg[i].high_threshold, step_chg_config.fcc_cfg[i].value);
+	pr_err("    } \n");
+
+	pr_err("sw jeita fcc cfg dump: \n");
+	if(jeita_fcc_config.psy_prop == POWER_SUPPLY_PROP_TEMP)
+		pr_err("    .psy_prop = POWER_SUPPLY_PROP_TEMP\n");
+	else
+		pr_err("    .psy_prop = unknow\n");
+	pr_err("    .prop_name = %s\n", jeita_fcc_config.prop_name);
+	pr_err("    .hysteresis = %d\n", jeita_fcc_config.hysteresis);
+	pr_err("    .fcc_cfg = { \n");
+	for(i=0;i<MAX_STEP_CHG_ENTRIES; i++)
+		pr_err("        {%d, %d, %d}\n", jeita_fcc_config.fcc_cfg[i].low_threshold, jeita_fcc_config.fcc_cfg[i].high_threshold, jeita_fcc_config.fcc_cfg[i].value);
+	pr_err("    } \n");
+
+	pr_err("sw jeita fv cfg dump: \n");
+	if(jeita_fv_config.psy_prop == POWER_SUPPLY_PROP_TEMP)
+		pr_err("    .psy_prop = POWER_SUPPLY_PROP_TEMP\n");
+	else
+		pr_err("    .psy_prop = unknow\n");
+	pr_err("    .prop_name = %s\n", jeita_fv_config.prop_name);
+	pr_err("    .hysteresis = %d\n", jeita_fv_config.hysteresis);
+	pr_err("    .fv_cfg = { \n");
+	for(i=0;i<MAX_STEP_CHG_ENTRIES; i++)
+		pr_err("        {%d, %d, %d}\n", jeita_fv_config.fv_cfg[i].low_threshold, jeita_fv_config.fv_cfg[i].high_threshold, jeita_fv_config.fv_cfg[i].value);
+	pr_err("    } \n");
+
+
+}
 
 static bool is_batt_available(struct step_chg_info *chip)
 {
@@ -448,6 +549,8 @@ int qcom_step_chg_init(bool step_chg_enable, bool sw_jeita_enable)
 	chip->step_index = -EINVAL;
 	chip->jeita_fcc_index = -EINVAL;
 	chip->jeita_fv_index = -EINVAL;
+
+	fih_dump_cfg();
 
 	if (step_chg_enable && (!step_chg_config.psy_prop ||
 				!step_chg_config.prop_name)) {

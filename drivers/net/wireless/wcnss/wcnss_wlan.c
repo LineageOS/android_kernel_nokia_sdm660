@@ -1403,6 +1403,8 @@ wcnss_gpios_config(struct resource *gpios_5wire, bool enable)
 		if (enable) {
 			rc = gpio_request(i, gpios_5wire->name);
 			if (rc) {
+				pr_info("BBox; %s: WCNSS gpio_request %d err %d\n",__func__, i, rc);
+				printk("BBox::UEC;13::6\n");
 				pr_err("WCNSS gpio_request %d err %d\n", i, rc);
 				goto fail;
 			}
@@ -1471,6 +1473,8 @@ wcnss_ctrl_probe(struct platform_device *pdev)
 	ret = smd_named_open_on_edge(WCNSS_CTRL_CHANNEL, SMD_APPS_WCNSS,
 			&penv->smd_ch, penv, wcnss_smd_notify_event);
 	if (ret < 0) {
+		pr_info("BBox; %s: wcnss: cannot open the smd command channel %s: %d\n",__func__, WCNSS_CTRL_CHANNEL, ret);
+		printk("BBox::UEC;13::7\n");
 		pr_err("wcnss: cannot open the smd command channel %s: %d\n",
 				WCNSS_CTRL_CHANNEL, ret);
 		return -ENODEV;
@@ -2011,6 +2015,8 @@ static unsigned char wcnss_fw_status(void)
 
 	len = smd_read_avail(penv->smd_ch);
 	if (len < 1) {
+		pr_info("BBox; %s: invalid firmware status\n",__func__);
+		printk("BBox::UEC;13::8\n");
 		pr_err("%s: invalid firmware status", __func__);
 		return fw_status;
 	}
@@ -2031,6 +2037,8 @@ static void wcnss_send_cal_rsp(unsigned char fw_status)
 
 	msg = kmalloc((sizeof(struct smd_msg_hdr) + 1), GFP_KERNEL);
 	if (NULL == msg) {
+		pr_info("BBox; wcnss: %s: failed to get memory\n",__func__);
+		printk("BBox::UEC;13::9\n");
 		pr_err("wcnss: %s: failed to get memory\n", __func__);
 		return;
 	}
@@ -2378,6 +2386,8 @@ static void wcnss_nvbin_dnld(void)
 	ret = request_firmware(&nv, NVBIN_FILE, dev);
 
 	if (ret || !nv || !nv->data || !nv->size) {
+		pr_info("BBox; %s: request_firmware failed for %s\n",__func__, NVBIN_FILE);
+		printk("BBox::UEC;13::10\n");
 		pr_err("wcnss: %s: request_firmware failed for %s (ret = %d)\n",
 			__func__, NVBIN_FILE, ret);
 		goto out;
@@ -2776,6 +2786,8 @@ wcnss_trigger_config(struct platform_device *pdev)
 		ret = wcnss_pronto_gpios_config(pdev, true);
 
 	if (ret) {
+		pr_info("BBox; %s: WCNSS gpios config failed. ret=%d\n",__func__, ret);
+		printk("BBox::UEC;13::11\n");
 		dev_err(&pdev->dev, "WCNSS gpios config failed.\n");
 		goto fail_gpio_res;
 	}
@@ -3366,7 +3378,11 @@ static int wcnss_notif_cb(struct notifier_block *this, unsigned long code,
 					WCNSS_WLAN_SWITCH_ON, &xo_mode);
 			wcnss_set_iris_xo_mode(xo_mode);
 			if (ret)
+			{
 				pr_err("Failed to execute wcnss_wlan_power\n");
+				printk("BBox::UEC;13::0\n");
+				pr_info("BBox; %s: WCNSS Power-up failed. ret=%d\n",__func__, ret);
+		    }
 		}
 	} else if (code == SUBSYS_PROXY_UNVOTE) {
 		if (pdev && pwlanconfig) {

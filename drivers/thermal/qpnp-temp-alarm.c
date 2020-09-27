@@ -285,7 +285,10 @@ static int qpnp_tz_get_temp_no_adc(struct thermal_zone_device *thermal,
 
 	rc = qpnp_tm_update_temp_no_adc(chip);
 	if (rc < 0)
+	{
+		printk("BBox::UEC;22::8\n");
 		return rc;
+	}
 
 	*temperature = chip->temperature;
 
@@ -303,6 +306,7 @@ static int qpnp_tz_get_temp_qpnp_adc(struct thermal_zone_device *thermal,
 
 	rc = qpnp_tm_update_temp(chip);
 	if (rc < 0) {
+		printk("BBox::UEC;22::8\n");
 		dev_err(&chip->pdev->dev,
 			"%s: %s: adc read failed, rc = %d\n",
 			__func__, chip->tm_name, rc);
@@ -443,7 +447,10 @@ static void qpnp_tm_work(struct work_struct *work)
 	if (chip->adc_type == QPNP_TM_ADC_NONE) {
 		rc = qpnp_tm_update_temp_no_adc(chip);
 		if (rc < 0)
+		{
+			printk("BBox::UEC;22::8\n");
 			goto bail;
+		}
 	} else {
 		rc = qpnp_tm_get_temp_stage(chip, &chip->stage);
 		if (rc < 0)
@@ -451,7 +458,10 @@ static void qpnp_tm_work(struct work_struct *work)
 
 		rc = qpnp_tm_update_temp(chip);
 		if (rc < 0)
+		{
+			printk("BBox::UEC;22::8\n");
 			goto bail;
+		}
 	}
 
 	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {

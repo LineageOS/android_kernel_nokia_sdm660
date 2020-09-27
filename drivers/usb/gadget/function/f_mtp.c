@@ -1335,6 +1335,12 @@ static int mtp_ctrlrequest(struct usb_composite_dev *cdev,
 	u16	w_length = le16_to_cpu(ctrl->wLength);
 	unsigned long	flags;
 
+	/* FIH - akckwang - NB1-4944 - rndis can't auto install driver */
+	//QC patch
+	if(!dev->function.os_desc_n)
+		return value;
+	/* end FIH - NB1-4944 */
+
 	VDBG(cdev, "mtp_ctrlrequest "
 			"%02x.%02x v%04x i%04x l%u\n",
 			ctrl->bRequestType, ctrl->bRequest,

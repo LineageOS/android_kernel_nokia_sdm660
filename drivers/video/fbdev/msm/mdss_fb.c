@@ -56,6 +56,12 @@
 #include "mdss_smmu.h"
 #include "mdss_mdp.h"
 
+//SW4-HL-Display-GlanceMode-00+{_20170524
+#ifdef CONFIG_AOD_FEATURE
+#include "fih/fih_msm_mdss_aod.h"
+#endif
+//SW4-HL-Display-GlanceMode-00+}_20170524
+
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MDSS_FB_NUM 3
 #else
@@ -84,6 +90,11 @@
 
 static struct fb_info *fbi_list[MAX_FBI_LIST];
 static int fbi_list_index;
+
+//SW4-HL-Display-GlanceMode-00+{_20170524
+struct msm_fb_data_type *mfd_glance = NULL;     //glance
+EXPORT_SYMBOL(mfd_glance);
+//SW4-HL-Display-GlanceMode-00+}_20170524
 
 static u32 mdss_fb_pseudo_palette[16] = {
 	0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -132,6 +143,13 @@ static inline uint64_t __user to_user_u64(void *ptr)
 {
 	return (uint64_t)((uintptr_t)ptr);
 }
+
+//SW4-HL-Display-GlanceMode-00+{_20170524
+#ifdef CONFIG_AOD_FEATURE
+extern int fih_set_blank_mode(int mode);
+extern int fih_get_aod(void);
+#endif
+//SW4-HL-Display-GlanceMode-00+}_20170524
 
 void mdss_fb_no_update_notify_timer_cb(unsigned long data)
 {
@@ -1397,6 +1415,14 @@ static int mdss_fb_probe(struct platform_device *pdev)
 
 	INIT_DELAYED_WORK(&mfd->idle_notify_work, __mdss_fb_idle_notify_work);
 
+	//SW4-HL-Display-GlanceMode-00+{_20170524
+    mfd_glance = (struct msm_fb_data_type *)fbi_list[0]->par;
+	if(!mfd_glance->panel_info)
+	{
+		pr_err("%s: BossVee mfd_glance mfd -> panel_info is NULL,dms_mode is %d\n", __func__, mfd->panel_info->mipi.dms_mode);
+	}
+	//SW4-HL-Display-GlanceMode-00+}_20170524
+
 	return rc;
 }
 
@@ -2004,6 +2030,11 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	int ret = 0;
 	int cur_power_state, req_power_state = MDSS_PANEL_POWER_OFF;
 	char trace_buffer[32];
+	//SW4-HL-Display-GlanceMode-00+{_20170524
+	#ifdef CONFIG_AOD_FEATURE
+	struct mdss_panel_data *pdata;
+	#endif
+	//SW4-HL-Display-GlanceMode-00+}_20170524
 
 	if (!mfd || !op_enable)
 		return -EPERM;
@@ -2045,6 +2076,19 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	case FB_BLANK_UNBLANK:
 		pr_debug("unblank called. cur pwr state=%d\n", cur_power_state);
 		ret = mdss_fb_blank_unblank(mfd);
+
+		//SW4-HL-Display-GlanceMode-00+{_20170524
+		#ifdef CONFIG_AOD_FEATURE
+		if (mfd->panel_info->aod_enabled)
+	 	{
+			if (mfd->panel_info->type == MIPI_CMD_PANEL)
+			{
+				pdata = dev_get_platdata(&mfd->pdev->dev);
+				fih_mdss_lp_config(pdata, 0, mfd->index);
+			}
+	 	}
+		#endif
+		//SW4-HL-Display-GlanceMode-00+}_20170524
 		break;
 	case BLANK_FLAG_ULP:
 		req_power_state = MDSS_PANEL_POWER_LP2;
@@ -2076,6 +2120,19 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	case FB_BLANK_HSYNC_SUSPEND:
 	case FB_BLANK_POWERDOWN:
 	default:
+		//SW4-HL-Display-GlanceMode-FixAutoRebootAfterGlanceTimeOut-00+{_20170601
+		#ifdef CONFIG_AOD_FEATURE
+		if (mfd->panel_info->aod_enabled)
+		{
+			if (mfd->panel_info->type == MIPI_CMD_PANEL)
+			{
+				pdata = dev_get_platdata(&mfd->pdev->dev);
+				fih_mdss_lp_config(pdata, 0, mfd->index);
+			}
+		}
+		#endif
+		//SW4-HL-Display-GlanceMode-FixAutoRebootAfterGlanceTimeOut-00+}_20170601
+
 		req_power_state = MDSS_PANEL_POWER_OFF;
 		pr_debug("blank powerdown called\n");
 		ret = mdss_fb_blank_blank(mfd, req_power_state);
@@ -2102,6 +2159,15 @@ static int mdss_fb_blank(int blank_mode, struct fb_info *info)
 			mfd->index, ret);
 		return ret;
 	}
+
+	//SW4-HL-Display-GlanceMode-00+{_20170524
+	#ifdef CONFIG_AOD_FEATURE
+	if (mfd->panel_info->aod_enabled)
+	{
+		fih_set_blank_mode(blank_mode);
+	}
+	#endif
+	//SW4-HL-Display-GlanceMode-00+}_20170524
 
 	mutex_lock(&mfd->mdss_sysfs_lock);
 
@@ -3668,6 +3734,32 @@ void mdss_panelinfo_to_fb_var(struct mdss_panel_info *pinfo,
 	if (pinfo->physical_height)
 		var->height = pinfo->physical_height;
 
+	//SW4-HL-Display-CTS_Xdpi_Ydpi-00+{_20151112
+	if (pinfo->physical_width_full)
+	{
+		var->width = pinfo->physical_width_full;
+	}
+	else
+	{
+		if (pinfo->physical_width)
+		{
+			var->width = pinfo->physical_width;
+		}
+	}
+
+	if (pinfo->physical_height_full)
+	{
+		var->height = pinfo->physical_height_full;
+	}
+	else
+	{
+		if (pinfo->physical_height)
+		{
+			var->height = pinfo->physical_height;
+		}
+	}
+	//SW4-HL-Display-CTS_Xdpi_Ydpi-00+}_20151112
+
 	pr_debug("ScreenInfo: res=%dx%d [%d, %d] [%d, %d]\n",
 		var->xres, var->yres, var->left_margin,
 		var->right_margin, var->upper_margin,
@@ -4911,7 +5003,13 @@ exit:
  * This function is used to change from DSI mode based on the
  * argument @mode on the next frame to be displayed.
  */
+//SW4-HL-Display-GlanceMode-00*{_20170524
+ #ifdef CONFIG_AOD_FEATURE
+/*static*/ int mdss_fb_mode_switch(struct msm_fb_data_type *mfd, u32 mode)
+#else
 static int mdss_fb_mode_switch(struct msm_fb_data_type *mfd, u32 mode)
+#endif
+//SW4-HL-Display-GlanceMode-00*}_20170524
 {
 	struct mdss_panel_info *pinfo = NULL;
 	int ret = 0;
@@ -4919,10 +5017,22 @@ static int mdss_fb_mode_switch(struct msm_fb_data_type *mfd, u32 mode)
 	if (!mfd || !mfd->panel_info)
 		return -EINVAL;
 
-	/* make sure that we are idle while switching */
-	mdss_fb_wait_for_kickoff(mfd);
-
-	pinfo = mfd->panel_info;
+	//SW4-HL-Display-GlanceMode-00*{_20170524
+	if (mfd->panel_info->aod_enabled)
+	{
+		//glance
+		/* make sure that we are idle while switching */
+		//mdss_fb_wait_for_kickoff(mfd);
+		pinfo = mfd->panel_info;
+		pr_info("%s: dms_mode = %d\n", __func__, pinfo->mipi.dms_mode);
+	}
+	else
+	{
+		/* make sure that we are idle while switching */
+		mdss_fb_wait_for_kickoff(mfd);
+		pinfo = mfd->panel_info;
+	}
+	//SW4-HL-Display-GlanceMode-00*}_20170524
 	if (pinfo->mipi.dms_mode == DYNAMIC_MODE_SWITCH_SUSPEND_RESUME) {
 		ret = mdss_fb_blanking_mode_switch(mfd, mode);
 	} else if (pinfo->mipi.dms_mode == DYNAMIC_MODE_SWITCH_IMMEDIATE) {

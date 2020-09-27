@@ -1,0 +1,5 @@
+/* HC1 preEVT SDM636 */
+
+/* inherit DRG DVT1.5 Settings */
+#include "../nokia/drg-DVT1.5-636.dtsi"
+

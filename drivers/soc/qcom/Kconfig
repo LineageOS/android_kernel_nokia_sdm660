@@ -580,6 +580,26 @@ config MSM_CORE_HANG_DETECT
 	  reset on core hang detection and collects the core context
 	  for hang.
 
+config FIH_FEATURE_RPM_STATS_LOG
+	bool "FIH RPM STATS LOG"
+	default n
+	help
+	 Enable to show RPM stats log after device resume from susped state.
+
+config FIH_FEATURE_RPM_MASTER_STATS_LOG
+	bool "FIH RPM MASTER STATS LOG"
+	depends on FIH_FEATURE_RPM_STATS_LOG
+	default n
+	help
+	 Enable to show RPM Master Stats log after device resume from suspend
+	 with certain conditions meet.
+
+config FIH_SUSPEND_RESUME_LOG
+	bool "FIH LOG about SUSPEND/RESUME"
+	default n
+	help
+	 Enable suspend and resume debug log.
+
 config MSM_RUN_QUEUE_STATS
 	bool "Enable collection and exporting of MSM Run Queue stats to userspace"
 	help

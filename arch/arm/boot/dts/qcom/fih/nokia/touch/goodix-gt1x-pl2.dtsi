@@ -1,0 +1,92 @@
+/* 
+ * Goodix GT9xx touchscreen driver
+ * 
+ * Copyright  (C)  2010 - 2014 Goodix. Ltd.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be a reference 
+ * to you, when you are integrating the GOODiX's CTP IC into your system, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+ * General Public License for more details.
+ * 
+ */
+ &tlmm{
+			/* add pingrp for Goodix touchscreen */
+			ts_int_default: ts_int_default {
+				mux {
+					pins = "gpio67";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio67";
+					drive-strength = <16>;
+					bias-disable;
+					input-enable;
+				};
+			};
+			
+			ts_int_output_high: ts_int_output_high {
+				mux {
+					pins = "gpio67";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio67";
+					// drive-strength = <16>; 
+					output-high;
+				};
+			};
+			
+			ts_int_output_low: ts_int_output_low {
+				mux {
+					pins = "gpio67";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio67";
+					// drive-strength = <16>; 
+					output-low;
+				};
+			};
+			
+			ts_int_input: ts_int_input {
+				mux {
+					pins = "gpio67";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio67";
+					bias-disable;
+					input-enable;
+				};
+			};
+		};
+ &i2c_4 { /*Goodix BLSP1 QUP5 */
+        	status = "okay";
+		goodix_ts@5d {
+			compatible = "goodix,gt1x";
+			reg = <0x14>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <67 0x02>;
+			//goodix,display-coords =  <0 0 1080 1920>;
+			//vdd_ana-supply = <&pm8226_l19>;
+			//vcc_i2c-supply = <&pm8226_lvs1>;
+			/* pins used by touchscreen */
+			pinctrl-names = "default","int-output-high","int-output-low","int-input";
+			pinctrl-0 = <&ts_int_default>;
+			pinctrl-1 = <&ts_int_output_high>;
+			pinctrl-2 = <&ts_int_output_low>;
+			pinctrl-3 = <&ts_int_input>;
+			goodix,rst-gpio = <&tlmm 66 0x01>;
+			goodix,irq-gpio = <&tlmm 67 0x02>;
+	};
+};

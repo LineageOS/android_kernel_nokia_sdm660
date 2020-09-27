@@ -1,0 +1,11 @@
+&soc {
+	hallsensor {
+		compatible = "fih,hallsensor";
+		interrupt-parent = <&tlmm>;
+		interrupts = <75 0x3>;
+		hallsensor,irq-gpio  = <&tlmm 75 0x00>;
+		vdd-supply = <&pm660_l13>;
+		hall-open,linux,code = <0x2f0>;
+		hall-close,linux,code = <0x2f1>;
+	};
+};
