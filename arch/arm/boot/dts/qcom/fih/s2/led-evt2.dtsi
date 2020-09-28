@@ -1,0 +1,29 @@
+&red_led {
+	qcom,ramp-step-ms = <128>;
+	qcom,max-brightness = <85>;
+	qcom,duty-ms = <20>;
+};
+
+&green_led {
+	qcom,ramp-step-ms = <128>;
+	qcom,start-idx = <0>;
+	qcom,idx-len = <22>;
+	qcom,duty-pcts =
+		[01 0a 14 1e 28 32 3c 46 50 5a 64
+		64 5a 50 46 3c 32 28 1e 14 0a 01];
+	qcom,use-blink;
+	qcom,max-brightness = <70>;
+	qcom,duty-ms = <20>;
+};
+
+&blue_led {
+	qcom,ramp-step-ms = <128>;
+	qcom,start-idx = <0>;
+        qcom,idx-len = <22>;
+        qcom,duty-pcts =
+                [01 0a 14 1e 28 32 3c 46 50 5a 64
+                64 5a 50 46 3c 32 28 1e 14 0a 01];
+        qcom,use-blink;
+        qcom,max-brightness = <180>;
+        qcom,duty-ms = <20>;
+};

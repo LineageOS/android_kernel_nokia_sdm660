@@ -1,0 +1,457 @@
+&spi_7 {
+	status = "disabled";
+};
+
+&slim_aud {
+	wcd9335: tasha_codec {
+		qcom,wcd-rst-gpio-node = <&wcd9xxx_rst_gpio>;
+
+		wsa_spkr_sd1: msm_cdc_pinctrll {	/* no used */
+			status = "disabled";
+		};
+
+		wsa_spkr_sd2: msm_cdc_pinctrlr {	/* no used */
+			status = "disabled";
+		};
+
+		tasha_hph_en0: msm_cdc_pinctrl_hph_en0 {	/* no used */
+			status = "disabled";
+		};
+
+		tasha_hph_en1: msm_cdc_pinctrl_hph_en1 {	/* no used */
+			status = "disabled";
+		};
+
+		swr_master {	/* no used */
+			status = "disabled";
+		};
+	};
+
+	wcd934x_cdc: tavil_codec {	/* no used */
+		status = "disabled";
+	};
+};
+
+&soc {
+	/* Qualcomm external codec no use */
+	cdc_pdm_gpios: cdc_pdm_pinctrl {
+		status = "disabled";
+	};
+
+	cdc_comp_gpios: cdc_comp_pinctrl {
+		status = "disabled";
+	};
+
+	cdc_dmic_gpios: cdc_dmic_pinctrl {
+		status = "disabled";
+	};
+
+	cdc_sdw_gpios: sdw_clk_data_pinctrl {
+		status = "disabled";
+	};
+
+	wsa_spkr_en1: wsa_spkr_en1_pinctrl {
+		status = "disabled";
+	};
+
+	wsa_spkr_en2: wsa_spkr_en2_pinctrl {
+		status = "disabled";
+	};
+
+	/* TFA9891 SmartAmp I2S */
+	qcom,msm-dai-mi2s {
+		dai_mi2s2: qcom,msm-dai-q6-mi2s-tert {
+			qcom,msm-dai-q6-mi2s-dev-id = <2>;
+			qcom,msm-mi2s-rx-lines = <1>;
+			qcom,msm-mi2s-tx-lines = <2>;
+		};
+	};
+
+	tert_mi2s_gpios: tert_mi2s_pinctrl {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&sdm660_gpio4_active &sdm660_gpio5_active &sdm660_gpio6_active &sdm660_gpio7_active>;
+		pinctrl-1 = <&sdm660_gpio4_sleep &sdm660_gpio5_sleep &sdm660_gpio6_sleep &sdm660_gpio7_sleep>;
+		qcom,lpi-gpios;
+	};
+
+	/* WCD9335 Audio Codec */
+	tasha_snd: sound-9335 {
+		qcom,tert-mi2s-gpios = <&tert_mi2s_gpios>;
+		qcom,audio-routing =
+			"AIF4 VI", "MCLK",
+			"RX_BIAS", "MCLK",
+			"MADINPUT", "MCLK",
+			"AMIC2", "MIC BIAS2",
+			"MIC BIAS2", "Analog Mic2",
+			"AMIC3", "MIC BIAS2",
+			"MIC BIAS2", "Analog Mic3",
+			"AMIC4", "MIC BIAS2",
+			"MIC BIAS2", "Analog Mic4",
+			"AMIC5", "MIC BIAS2",
+			"MIC BIAS2", "Analog Mic5",
+			"AMIC6", "MIC BIAS2",
+			"MIC BIAS2", "Analog Mic6",
+			"DMIC0", "MIC BIAS1",
+			"MIC BIAS1", "Digital Mic0",
+			"DMIC1", "MIC BIAS1",
+			"MIC BIAS1", "Handset Mic",
+			"DMIC2", "MIC BIAS3",
+			"MIC BIAS3", "Digital Mic2",
+			"DMIC3", "MIC BIAS3",
+			"MIC BIAS3", "Secondary Mic",
+			"DMIC4", "MIC BIAS4",
+			"MIC BIAS4", "Digital Mic4",
+			"DMIC5", "MIC BIAS4",
+			"MIC BIAS4", "Digital Mic5";
+
+		qcom,msm-mbhc-hphl-swh = <0>;
+		qcom,msm-mbhc-gnd-swh = <0>;
+		/delete-property/ qcom,us-euro-gpios;	/* no used */
+		/delete-property/ qcom,hph-en0-gpio;	/* no used */
+		/delete-property/ qcom,hph-en1-gpio;	/* no used */
+		/delete-property/ qcom,wsa-max-devs;	/* no used */
+		/delete-property/ qcom,wsa-devs;	/* no used */
+		/delete-property/ qcom,wsa-aux-dev-prefix;	/* no used */
+		fih,ext-spk-amp-support;
+	};
+
+	tavil_snd: sound-tavil {	/* no used */
+		status = "disabled";
+	};
+
+	us_euro_gpio: msm_cdc_pinctrl@75 {	/* no used */
+		status = "disabled";
+	};
+
+	wcd9xxx_intc: wcd9xxx-irq {
+		pinctrl-names = "default";
+		pinctrl-0 = <&sdm660_gpio22_default>;
+		qcom,lpi-gpios;
+	};
+
+	clock_audio: audio_ext_clk {
+		pinctrl-names = "sleep", "active";
+		pinctrl-0 = <&sdm660_gpio18_sleep>;
+		pinctrl-1 = <&sdm660_gpio18_active>;
+	};
+
+	wcd_rst_gpio: msm_cdc_pinctrl@64 {	/* remove Qualcomm default reset gpio setting */
+		status = "disabled";
+	};
+
+	wcd9xxx_rst_gpio: msm_cdc_pinctrl@24 {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&sdm660_gpio24_active>;
+		pinctrl-1 = <&sdm660_gpio24_sleep>;
+		qcom,lpi-gpios;
+	};
+
+	/* TFA9891 SmartAmp I2C */
+	i2c_7: i2c@c1b7000 {
+		pinctrl-names = "i2c_active", "i2c_sleep";
+		pinctrl-0 = <&sdm660_gpio26_active &sdm660_gpio27_active>;
+		pinctrl-1 = <&sdm660_gpio26_sleep &sdm660_gpio27_sleep>;
+		status = "okay";
+		nxp_tfa9891_amp@34 {
+			compatible = "nxp,tfa98xx";
+			reg = <0x34>;
+		};
+	};
+
+	/* gpio */
+	tlmm: pinctrl@03000000 {
+		/* gpio 26 */ /* SPK_I2C_SDA */
+		sdm660_gpio26_active: sdm660_gpio26_active {
+			mux {
+				pins = "gpio26";
+				function = "blsp_i2c7";
+			};
+
+			config {
+				pins = "gpio26";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		sdm660_gpio26_sleep: sdm660_gpio26_sleep {
+			mux {
+				pins = "gpio26";
+				function = "blsp_i2c7";
+			};
+
+			config {
+				pins = "gpio26";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		/* gpio 27 */ /* SPK_I2C_SCL */
+		sdm660_gpio27_active: sdm660_gpio27_active {
+			mux {
+				pins = "gpio27";
+				function = "blsp_i2c7";
+			};
+
+			config {
+				pins = "gpio27";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		sdm660_gpio27_sleep: sdm660_gpio27_sleep {
+			mux {
+				pins = "gpio27";
+				function = "blsp_i2c7";
+			};
+
+			config {
+				pins = "gpio27";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+
+	lpi_tlmm: lpi_pinctrl@15070000 {
+		/* gpio 4 */ /* SPK_I2S_CLK */
+		sdm660_gpio4_active: sdm660_gpio4_active {
+			mux {
+				pins = "gpio4";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio4";
+				drive-strength = <8>;
+				bias-disable;
+				output-high;
+			};
+		};
+
+		sdm660_gpio4_sleep: sdm660_gpio4_sleep {
+			mux {
+				pins = "gpio4";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio4";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		/* gpio 5 */ /* SPK_I2S_WS */
+		sdm660_gpio5_active: sdm660_gpio5_active {
+			mux {
+				pins = "gpio5";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio5";
+				drive-strength = <8>;
+				bias-disable;
+				output-high;
+			};
+		};
+
+		sdm660_gpio5_sleep: sdm660_gpio5_sleep {
+			mux {
+				pins = "gpio5";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio5";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		/* gpio 6 */ /* SPK_I2S_DATA0 */
+		sdm660_gpio6_active: sdm660_gpio6_active {
+			mux {
+				pins = "gpio6";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio6";
+				drive-strength = <8>;
+				bias-disable;
+			};
+		};
+
+		sdm660_gpio6_sleep: sdm660_gpio6_sleep {
+			mux {
+				pins = "gpio6";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio6";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		/* gpio 7 */ /* SPK_I2S_DATA1 */
+		sdm660_gpio7_active: sdm660_gpio7_active {
+			mux {
+				pins = "gpio7";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio7";
+				drive-strength = <8>;
+				bias-disable;
+				input-enable;
+			};
+		};
+
+		sdm660_gpio7_sleep: sdm660_gpio7_sleep {
+			mux {
+				pins = "gpio7";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio7";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		/* gpio 18 */ /* CDC_MCLK2 */
+		sdm660_gpio18_active: sdm660_gpio18_active {
+			mux {
+				pins = "gpio18";
+				function = "func2";
+			};
+
+			config {
+				pins = "gpio18";
+				drive-strength = <8>;
+				bias-disable;
+			};
+		};
+
+		sdm660_gpio18_sleep: sdm660_gpio18_sleep {
+			mux {
+				pins = "gpio18";
+				function = "func2";
+			};
+
+			config {
+				pins = "gpio18";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		/* gpio 19 */ /* WCD_SB_CLK */
+		sdm660_gpio19_default: sdm660_gpio19_default {
+			mux {
+				pins = "gpio19";
+				function = "func2";
+			};
+
+			config {
+				pins = "gpio19";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		/* gpio 20 */ /* WCD_SB_DATA0 */
+		sdm660_gpio20_default: sdm660_gpio20_default {
+			mux {
+				pins = "gpio20";
+				function = "func2";
+			};
+
+			config {
+				pins = "gpio20";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		/* gpio 21 */ /* WCD_SB_DATA1 */
+		sdm660_gpio21_default: sdm660_gpio21_default {
+			mux {
+				pins = "gpio21";
+				function = "func2";
+			};
+
+			config {
+				pins = "gpio21";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		/* gpio 22 */ /* WCD_INT1 */
+		sdm660_gpio22_default: sdm660_gpio22_default{
+			mux {
+				pins = "gpio22";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio22";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+
+		/* gpio 23 */ /* WCD_INT2 */
+		sdm660_gpio23_default: sdm660_gpio23_default {
+			mux {
+				pins = "gpio23";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio23";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		/* gpio 24 */ /* WCD_RESET_N */
+		sdm660_gpio24_active: sdm660_gpio24_active {
+			mux {
+				pins = "gpio24";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio24";
+				drive-strength = <2>;
+				bias-disable;
+				output-high;
+			};
+		};
+
+		sdm660_gpio24_sleep: sdm660_gpio24_sleep {
+			mux {
+				pins = "gpio24";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio24";
+				drive-strength = <2>;
+				bias-disable;
+				output-low;
+			};
+		};
+	};
+};

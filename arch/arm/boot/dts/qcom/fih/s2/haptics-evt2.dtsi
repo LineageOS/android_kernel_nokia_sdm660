@@ -1,0 +1,12 @@
+&spmi_bus {
+	qcom,pm660@1 {
+		 pm660_haptics: qcom,haptic@c000 {
+			qcom,vmax-mv = <2500>;
+			qcom,wave-shape = "sine";
+			qcom,wave-play-rate-us = <4347>;
+			qcom,int-pwm-freq-khz = <505>;
+			qcom,brake-pattern = [02 01 00 00];
+			fih,auto-res-workaround;
+		};
+	};
+};

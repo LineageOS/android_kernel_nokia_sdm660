@@ -251,6 +251,12 @@ dtb-$(CONFIG_FIH_SDM630_SDM660_PROJS) += sdm660-mtp.dtb \
   sdm660-mtp-tas-EVT.dtb \
   sdm660-mtp-tas-PVT.dtb \
   sdm660-mtp-tas-MP.dtb \
+  sdm630-cdp-s2-evt.dtb \
+  sdm630-cdp-s2-dvt.dtb \
+  sdm630-mtp-s2-evt.dtb \
+  sdm630-mtp-s2-dvt.dtb \
+  sdm630-mtp-s2_eu-dvt.dtb
+
 #dtb-$(CONFIG_ARCH_SDM660) += sdm660-sim.dtb \
 #	sdm660-internal-codec-cdp.dtb \
 #	sdm660-internal-codec-mtp.dtb \

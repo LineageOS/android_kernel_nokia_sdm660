@@ -1,0 +1,71 @@
+/ {
+	/delete-node/ qcom,battery-data;
+	fih_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "fg-gen3-batterydata-sat-scud-3000mah-100k.dtsi"
+	};
+};
+
+&pm660_fg {
+	qcom,battery-data = <&fih_batterydata>;
+	qcom,fg-cutoff-voltage = <3350>;
+	qcom,fg-empty-voltage = <3300>;
+	qcom,fg-vbatt-low-thr = <3350>;
+	qcom,fg-chg-term-current = <100>;	/* 100mA > 0.02C */
+	qcom,fg-sys-term-current = <(-125)>;	/* 100mA + 25mA */
+	qcom,fg-chg-term-base-current = <75>;	/* 100mA - 25mA */
+	qcom,fg-delta-soc-thr = <1>;
+	qcom,fg-recharge-soc-thr = <99>;
+	qcom,fg-auto-recharge-soc;
+	qcom,fg-rsense-sel = <0>;
+	qcom,fg-jeita-thresholds = <0 15 45 55>;
+	qcom,battery-thermal-coefficients = [A1 50 ff];
+	qcom,fg-esr-timer-charging = <0 96>;
+	qcom,fg-esr-timer-awake = <96 96>;
+	qcom,fg-esr-timer-asleep = <256 256>;
+	qcom,cycle-counter-en;
+	qcom,fg-force-load-profile;
+	qcom,fg-jeita-hyst-temp = <0>;
+	qcom,fg-batt-temp-delta = <2>;
+	qcom,hold-soc-while-full;
+	//qcom,fg-rconn-mohms = <10>;
+};
+
+&pm660_charger {
+	/delete-property/ qcom,step-charging-enable;
+	qcom,sw-jeita-enable;
+	qcom,wd-bark-time-secs = <64>;
+	/delete-property/ qcom,batteryless-platform;
+	qcom,fcc-max-ua = <2100000>;
+	qcom,fv-max-uv = <4400000>;
+	qcom,usb-icl-ua = <3000000>;
+	qcom,boost-threshold-ua = <100000>;
+	/delete-property/ qcom,wipower-max-uw;
+	qcom,thermal-mitigation = <2100000 1500000 1200000 1000000 900000 800000
+		700000 600000 500000 400000 300000 200000 100000 0>;
+	qcom,float-option = <1>;
+	/delete-property/ qcom,hvdcp-disable;
+	/delete-property/ qcom,chg-inhibit-threshold-mv;
+	qcom,auto-recharge-soc;
+	/delete-property/ qcom,micro-usb;
+	/delete-property/ qcom,suspend-input-on-debug-batt;
+	/delete-property/ qcom,disable-wipower;
+
+	/* FIH */
+	qcom,jeita-fcc-cfg = <0		159	600000>,
+			     <160	440	2100000>,
+			     <441	550	1500000>;
+	qcom,jeita-fv-cfg = <0		440	4400000>,
+			    <441	550	4100000>;
+	qcom,jeita-fcc-fv-hysteresis = <9>;
+	fih,sdp-current-ua = <500000>;
+	fih,hvdcp-current-ua = <1500000>;
+	fih,aicl-rerun;
+	fih,jeita-recover;
+};
+
+&i2c_2 {
+	smb1351-charger@1d {
+		status = "disabled";
+	};
+};

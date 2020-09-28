@@ -1,0 +1,46 @@
+/* SS2 EU DVT SDM630 */
+
+/* MemMap parts */
+#include "../common/memmap-evb.dtsi"
+
+/* SYSTEM parts */
+#include "system-dvt.dtsi"
+
+/* PMIC parts */
+
+/* GPIO parts */
+
+/* Peripheral */
+
+/* Charging */
+#include "charger-eu.dtsi"
+
+/* Audio */
+#include "audio-alsa-evb.dtsi"
+
+/* Camera */
+#include "camera-evt.dtsi"
+
+/* Haptic */
+#include "haptics-evt2.dtsi"
+
+/* Touch */
+#include "touch-focaltech8716-evt2.dtsi"
+
+/* LCM */
+#include "dsi-panel-ft8716-ffd-video-evt2.dtsi"
+
+/* Fingerprint */
+#include "fingerprint-fpc1145-evb.dtsi"
+
+/* SD */
+#include "sd-evb.dtsi"
+
+/* Sensor */
+#include "hallsensor-ah1902-evb.dtsi"
+
+/* LED */
+#include "led-evt2.dtsi"
+
+/* Keypad */
+#include "keypad.dtsi"
