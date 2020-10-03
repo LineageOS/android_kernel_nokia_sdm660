@@ -442,13 +442,7 @@ static struct platform_driver fpc1020_driver = {
 
 static int __init fpc1020_init(void)
 {
-    int rc = 0;
-    if(((strstr(saved_command_line, "androidboot.fp=fpc1035_tas") == NULL)) || (strstr(saved_command_line,"androidboot.mode=charger") != NULL)) {
-        pr_info("%s This FPM vendor is not fpc.\n",__func__);
-        return 0;
-    }
-
-	rc = platform_driver_register(&fpc1020_driver);
+	int rc = platform_driver_register(&fpc1020_driver);
 
 	if (!rc)
 		pr_info("%s OK\n", __func__);
