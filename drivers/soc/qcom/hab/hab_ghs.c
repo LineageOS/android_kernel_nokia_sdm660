@@ -86,7 +86,7 @@ static void ghs_irq_handler(void *cookie)
 		(struct ghs_vdev *) (pchan ? pchan->hyp_data : NULL);
 
 	if (dev)
-		tasklet_schedule(&dev->task);
+		tasklet_hi_schedule(&dev->task);
 }
 
 static int get_dt_name_idx(int vmid_base, int mmid,
@@ -263,7 +263,8 @@ int habhyp_commdev_dealloc(void *commdev)
 	kgipc_endpoint_free(dev->endpoint);
 	kfree(dev->read_data);
 	kfree(dev);
-
+	pchan->closed = 1;
+	pchan->hyp_data = NULL;
 	if (get_refcnt(pchan->refcount) > 1) {
 		pr_warn("potential leak pchan %s vchans %d refcnt %d\n",
 			pchan->name, pchan->vcnt, get_refcnt(pchan->refcount));
