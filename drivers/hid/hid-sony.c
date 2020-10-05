@@ -73,6 +73,7 @@
 
 #define MAX_LEDS 4
 
+
 /* PS/3 Motion controller */
 static u8 motion_rdesc[] = {
 	0x05, 0x01,         /*  Usage Page (Desktop),               */
@@ -296,7 +297,7 @@ static const unsigned int buzz_keymap[] = {
 	/*
 	 * The controller has 4 remote buzzers, each with one LED and 5
 	 * buttons.
-	 * 
+	 *
 	 * We use the mapping chosen by the controller, which is:
 	 *
 	 * Key          Offset
@@ -331,7 +332,7 @@ static const unsigned int buzz_keymap[] = {
 	[19] = BTN_TRIGGER_HAPPY19,
 	[20] = BTN_TRIGGER_HAPPY20,
 };
- 
+
 /* The Navigation controller is a partial DS3 and uses the same HID report
  * and hence the same keymap indices, however not not all axes/buttons
  * are physically present. We use the same axis and button mapping as
@@ -502,7 +503,7 @@ struct motion_output_report_02 {
 static DEFINE_SPINLOCK(sony_dev_list_lock);
 static LIST_HEAD(sony_device_list);
 static DEFINE_IDA(sony_device_id_allocator);
- 
+
 /* Used for calibration of DS4 accelerometer and gyro. */
 struct ds4_calibration_data {
 	int abs_code;
@@ -575,10 +576,14 @@ static void sony_set_leds(struct sony_sc *sc);
 static inline void sony_schedule_work(struct sony_sc *sc,
 				      enum sony_worker which)
 {
+	unsigned long flags;
+
 	switch (which) {
 	case SONY_WORKER_STATE:
-		if (!sc->defer_initialization)
+		spin_lock_irqsave(&sc->lock, flags);
+		if (!sc->defer_initialization && sc->state_worker_initialized)
 			schedule_work(&sc->state_worker);
+		spin_unlock_irqrestore(&sc->lock, flags);
 		break;
 	case SONY_WORKER_HOTPLUG:
 		if (sc->hotplug_worker_initialized)
@@ -1398,6 +1403,7 @@ static void sony_unregister_sensors(struct sony_sc *sc)
 	sc->sensor_dev = NULL;
 }
 
+
 /*
  * Sending HID_REQ_GET_REPORT changes the operation mode of the ps3 controller
  * to "operational".  Without this, the ps3 controller will not report any
@@ -1605,7 +1611,7 @@ err_stop:
 	kfree(buf);
 	return ret;
 }
- 
+
 static void dualshock4_calibration_work(struct work_struct *work)
 {
 	struct sony_sc *sc = container_of(work, struct sony_sc, hotplug_worker);
@@ -1962,7 +1968,7 @@ static void sixaxis_send_output_report(struct sony_sc *sc)
 	static const union sixaxis_output_report_01 default_report = {
 		.buf = {
 			0x01,
-			0x00, 0xff, 0x00, 0xff, 0x00,
+			0x01, 0xff, 0x00, 0xff, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00,
 			0xff, 0x27, 0x10, 0x00, 0x32,
 			0xff, 0x27, 0x10, 0x00, 0x32,
@@ -1971,7 +1977,6 @@ static void sixaxis_send_output_report(struct sony_sc *sc)
 			0x00, 0x00, 0x00, 0x00, 0x00
 		}
 	};
-
 	struct sixaxis_output_report *report =
 		(struct sixaxis_output_report *)sc->output_report_dmabuf;
 	int n;
@@ -2153,9 +2158,15 @@ static int sony_play_effect(struct input_dev *dev, void *data,
 
 static int sony_init_ff(struct sony_sc *sc)
 {
-	struct hid_input *hidinput = list_entry(sc->hdev->inputs.next,
-						struct hid_input, list);
-	struct input_dev *input_dev = hidinput->input;
+	struct hid_input *hidinput;
+	struct input_dev *input_dev;
+
+	if (list_empty(&sc->hdev->inputs)) {
+		hid_err(sc->hdev, "no inputs found\n");
+		return -ENODEV;
+	}
+	hidinput = list_entry(sc->hdev->inputs.next, struct hid_input, list);
+	input_dev = hidinput->input;
 
 	input_set_capability(input_dev, EV_FF, FF_RUMBLE);
 	return input_ff_create_memless(input_dev, NULL, sony_play_effect);
@@ -2482,12 +2493,17 @@ static inline void sony_init_output_report(struct sony_sc *sc,
 
 static inline void sony_cancel_work_sync(struct sony_sc *sc)
 {
+	unsigned long flags;
+
 	if (sc->hotplug_worker_initialized)
 		cancel_work_sync(&sc->hotplug_worker);
-	if (sc->state_worker_initialized)
+	if (sc->state_worker_initialized) {
+		spin_lock_irqsave(&sc->lock, flags);
+		sc->state_worker_initialized = 0;
+		spin_unlock_irqrestore(&sc->lock, flags);
 		cancel_work_sync(&sc->state_worker);
+	}
 }
-
 
 static int sony_input_configured(struct hid_device *hdev,
 					struct hid_input *hidinput)
@@ -2585,7 +2601,7 @@ static int sony_input_configured(struct hid_device *hdev,
 		 * when connected via Bluetooth.
 		 */
 		hdev->quirks |= HID_QUIRK_NO_OUTPUT_REPORTS_ON_INTR_EP;
-		
+
 		ret = sixaxis_set_operational_bt(hdev);
 		if (ret < 0) {
 			hid_err(hdev, "Failed to set controller into operational mode\n");
@@ -2695,7 +2711,6 @@ err_stop:
 	kfree(sc->output_report_dmabuf);
 	sony_remove_dev_list(sc);
 	sony_release_device_id(sc);
-	hid_hw_stop(hdev);
 	return ret;
 }
 
@@ -2754,6 +2769,7 @@ static int sony_probe(struct hid_device *hdev, const struct hid_device_id *id)
 	 */
 	if (!(hdev->claimed & HID_CLAIMED_INPUT)) {
 		hid_err(hdev, "failed to claim input\n");
+		hid_hw_stop(hdev);
 		return -ENODEV;
 	}
 
@@ -2765,7 +2781,7 @@ static void sony_remove(struct hid_device *hdev)
 	struct sony_sc *sc = hid_get_drvdata(hdev);
 
 	hid_hw_close(hdev);
-	
+
 	if (sc->quirks & SONY_LED_SUPPORT)
 		sony_leds_remove(sc);
 
@@ -2791,6 +2807,43 @@ static void sony_remove(struct hid_device *hdev)
 
 	hid_hw_stop(hdev);
 }
+
+#ifdef CONFIG_PM
+
+static int sony_suspend(struct hid_device *hdev, pm_message_t message)
+{
+#ifdef CONFIG_SONY_FF
+
+	/* On suspend stop any running force-feedback events */
+	if (SONY_FF_SUPPORT) {
+		struct sony_sc *sc = hid_get_drvdata(hdev);
+
+		sc->left = sc->right = 0;
+		sony_send_output_report(sc);
+	}
+
+#endif
+	return 0;
+}
+
+static int sony_resume(struct hid_device *hdev)
+{
+	struct sony_sc *sc = hid_get_drvdata(hdev);
+
+	/*
+	 * The Sixaxis and navigation controllers on USB need to be
+	 * reinitialized on resume or they won't behave properly.
+	 */
+	if ((sc->quirks & SIXAXIS_CONTROLLER_USB) ||
+		(sc->quirks & NAVIGATION_CONTROLLER_USB)) {
+		sixaxis_set_operational_usb(sc->hdev);
+		sc->defer_initialization = 1;
+	}
+
+	return 0;
+}
+
+#endif
 
 static const struct hid_device_id sony_devices[] = {
 	{ HID_USB_DEVICE(USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_PS3_CONTROLLER),
@@ -2836,7 +2889,7 @@ static const struct hid_device_id sony_devices[] = {
 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_PS4_CONTROLLER_2),
 		.driver_data = DUALSHOCK4_CONTROLLER_BT },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_PS4_CONTROLLER_DONGLE),
-		.driver_data = DUALSHOCK4_CONTROLLER_USB },
+		.driver_data = DUALSHOCK4_DONGLE },
 	{ }
 };
 MODULE_DEVICE_TABLE(hid, sony_devices);
@@ -2849,7 +2902,13 @@ static struct hid_driver sony_driver = {
 	.probe            = sony_probe,
 	.remove           = sony_remove,
 	.report_fixup     = sony_report_fixup,
-	.raw_event        = sony_raw_event
+	.raw_event        = sony_raw_event,
+
+#ifdef CONFIG_PM
+	.suspend          = sony_suspend,
+	.resume	          = sony_resume,
+	.reset_resume     = sony_resume,
+#endif
 };
 
 static int __init sony_init(void)
