@@ -85,13 +85,13 @@ lim_process_deauth_frame(tpAniSirGlobal pMac, uint8_t *pRxPacketInfo,
 	    ((eLIM_SME_WT_DISASSOC_STATE == psessionEntry->limSmeState) ||
 	     (eLIM_SME_WT_DEAUTH_STATE == psessionEntry->limSmeState))) {
 		/*Every 15th deauth frame will be logged in kmsg */
-		if (!(pMac->lim.deauthMsgCnt & 0xF)) {
+		if (!(psessionEntry->deauthmsgcnt & 0xF)) {
 			pe_debug("received Deauth frame in DEAUTH_WT_STATE"
 				"(already processing previously received DEAUTH frame)"
 				"Dropping this.. Deauth Failed %d",
-				       ++pMac->lim.deauthMsgCnt);
+				       ++psessionEntry->deauthmsgcnt);
 		} else {
-			pMac->lim.deauthMsgCnt++;
+			psessionEntry->deauthmsgcnt++;
 		}
 		return;
 	}
@@ -189,7 +189,6 @@ lim_process_deauth_frame(tpAniSirGlobal pMac, uint8_t *pRxPacketInfo,
 			pe_err("received Deauth frame with invalid reasonCode %d from "
 				       MAC_ADDRESS_STR, reasonCode,
 				       MAC_ADDR_ARRAY(pHdr->sa));
-
 			break;
 		}
 	} else if (LIM_IS_STA_ROLE(psessionEntry)) {
@@ -209,7 +208,6 @@ lim_process_deauth_frame(tpAniSirGlobal pMac, uint8_t *pRxPacketInfo,
 			pe_err("received Deauth frame with invalid reasonCode %d from "
 				       MAC_ADDRESS_STR, reasonCode,
 				       MAC_ADDR_ARRAY(pHdr->sa));
-
 			break;
 		}
 	} else {
@@ -366,10 +364,6 @@ void lim_perform_deauth(tpAniSirGlobal mac_ctx, tpPESession pe_session,
 				mlmDeauthInd.reasonCode = rc;
 
 			pe_session->limMlmState = eLIM_MLM_IDLE_STATE;
-			MTRACE(mac_trace
-				(mac_ctx, TRACE_CODE_MLM_STATE,
-				 pe_session->peSessionId,
-				 pe_session->limMlmState));
 
 			lim_post_sme_message(mac_ctx,
 					LIM_MLM_DEAUTH_IND,
@@ -402,10 +396,6 @@ void lim_perform_deauth(tpAniSirGlobal mac_ctx, tpPESession pe_session,
 
 			pe_session->limMlmState =
 			pe_session->limPrevMlmState;
-			MTRACE(mac_trace
-				(mac_ctx, TRACE_CODE_MLM_STATE,
-				 pe_session->peSessionId,
-				 pe_session->limMlmState));
 
 			/* Deactive Association response timeout */
 			lim_deactivate_and_change_timer(mac_ctx,
@@ -559,10 +549,10 @@ void lim_perform_deauth(tpAniSirGlobal mac_ctx, tpPESession pe_session,
 		return;
 	}
 	/* reset the deauthMsgCnt here since we are able to Process
-	 * the deauth frame and sending up the indication as well */
-	if (mac_ctx->lim.deauthMsgCnt != 0) {
-		mac_ctx->lim.deauthMsgCnt = 0;
-	}
+	* the deauth frame and sending up the indication as well */
+	if (pe_session->deauthmsgcnt != 0)
+		pe_session->deauthmsgcnt = 0;
+
 	if (LIM_IS_STA_ROLE(pe_session))
 		wma_tx_abort(pe_session->smeSessionId);
 

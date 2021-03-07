@@ -65,7 +65,7 @@ cfg_send_host_msg(tpAniSirGlobal pMac, uint16_t msgType, uint32_t msgLen,
 		  uint32_t *pData)
 {
 	uint32_t *pMsg, *pEnd;
-	struct scheduler_msg mmhMsg = {0};
+	tSirMsgQ mmhMsg;
 
 	if ((paramNum > 0) && (NULL == pParamList)) {
 		pe_err("pParamList NULL when paramNum greater than 0!");
@@ -117,7 +117,6 @@ cfg_send_host_msg(tpAniSirGlobal pMac, uint16_t msgType, uint32_t msgLen,
 	}
 
 	/* Ship it */
-	MTRACE(mac_trace_msg_tx(pMac, NO_SESSION, mmhMsg.type));
 	sys_process_mmh_msg(pMac, &mmhMsg);
 
 } /*** end cfg_send_host_msg() ***/
