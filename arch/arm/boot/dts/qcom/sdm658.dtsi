@@ -65,7 +65,6 @@
 
 	qcom,bcl {
 		qcom,bcl-hotplug-list = <&CPU4 &CPU5>;
-		qcom,bcl-soc-hotplug-list = <&CPU4 &CPU5>;
 	};
 
 	qcom,spm@178120000 {
