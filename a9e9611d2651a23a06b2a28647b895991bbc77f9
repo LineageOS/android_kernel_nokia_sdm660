@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f31e8381_2b5d5a33",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 19612
+      },
+      "writtenOn": "2022-01-12T15:00:34Z",
+      "side": 1,
+      "message": "Patch generation script: https://github.com/WireGuard/wireguard-linux-compat/blob/master/kernel-tree-scripts/create-patch.sh",
+      "revId": "a9e9611d2651a23a06b2a28647b895991bbc77f9",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
