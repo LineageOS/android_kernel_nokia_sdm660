@@ -429,6 +429,7 @@
 	firmware: firmware {
 		android {
 			compatible = "android,firmware";
+			boot_devices = "soc/c0c4000.sdhci";
 			fstab {
 				compatible = "android,fstab";
 				vendor {
@@ -437,7 +438,7 @@
 					type = "ext4";
 					mnt_flags = "ro,barrier=1,discard";
 					fsmgr_flags = "wait,slotselect,verify";
-					status = "ok";
+					status = "disabled";
 				};
 			};
 		};
