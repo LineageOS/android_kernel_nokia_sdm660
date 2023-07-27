@@ -1592,7 +1592,7 @@ select_task_rq_rt_hmp(struct task_struct *p, int cpu, int sd_flag, int flags)
 	int target;
 
 	rcu_read_lock();
-	target = find_lowest_rq(p);
+	target = find_lowest_rq(p, 0);
 	if (target != -1)
 		cpu = target;
 	rcu_read_unlock();
