@@ -236,7 +236,7 @@ static inline struct rq *rq_of_rt_se(struct sched_rt_entity *rt_se)
 {
 	struct task_struct *p = rt_task_of(rt_se);
 
-	return task_rq(p);
+	return task_rq(p, 0);
 }
 
 static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
@@ -1592,7 +1592,7 @@ select_task_rq_rt_hmp(struct task_struct *p, int cpu, int sd_flag, int flags)
 	int target;
 
 	rcu_read_lock();
-	target = find_lowest_rq(p);
+	target = find_lowest_rq(p, 0);
 	if (target != -1)
 		cpu = target;
 	rcu_read_unlock();
