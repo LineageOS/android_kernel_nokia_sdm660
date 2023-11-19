@@ -299,7 +299,7 @@
 
 	firmware: firmware {
 		android {
-			ompatible = "android,firmware";
+			compatible = "android,firmware";
 			boot_devices = "soc/c0c4000.sdhci";
 			fstab {
 				compatible = "android,fstab";
