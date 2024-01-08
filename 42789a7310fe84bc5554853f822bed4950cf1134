@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "840bb243_53081114",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 16185
+      },
+      "writtenOn": "2024-01-08T06:19:48Z",
+      "side": 1,
+      "message": "PL2/DRG don\u0027t use EAS - but if someone finishes DDV, it _does_ so we want to support it.",
+      "revId": "42789a7310fe84bc5554853f822bed4950cf1134",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
