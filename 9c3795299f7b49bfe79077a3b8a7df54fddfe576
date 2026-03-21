@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b51e2625_efcf0709",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 32674
+      },
+      "writtenOn": "2026-03-21T18:16:58Z",
+      "side": 1,
+      "message": "Can confirm this builds DTBO image. DDV uses dtbo.",
+      "revId": "9c3795299f7b49bfe79077a3b8a7df54fddfe576",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
