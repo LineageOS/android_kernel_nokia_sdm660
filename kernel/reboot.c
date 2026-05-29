@@ -17,6 +17,10 @@
 #include <linux/syscore_ops.h>
 #include <linux/uaccess.h>
 
+#if defined(CONFIG_FIH_SDM630_SDM660_PROJS)
+#include "../drivers/platform/fih/fih_rere.h"
+#endif
+
 /*
  * this indicates whether you can reboot with ctrl-alt-del: the default is yes
  */
@@ -67,6 +71,13 @@ EXPORT_SYMBOL_GPL(emergency_restart);
 
 void kernel_restart_prepare(char *cmd)
 {
+#if defined(CONFIG_FIH_SDM630_SDM660_PROJS)
+	/* FIH, to support fih apr { */
+	fih_rere_wt_imem(FIH_RERE_KERNEL_RESTART);
+	pr_info("%s: rere = 0x%08x\n", __func__, fih_rere_rd_imem());
+	/* FIH, to support fih apr } */
+#endif
+
 	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, cmd);
 	system_state = SYSTEM_RESTART;
 	usermodehelper_disable();
@@ -227,6 +238,13 @@ EXPORT_SYMBOL_GPL(kernel_restart);
 
 static void kernel_shutdown_prepare(enum system_states state)
 {
+#if defined(CONFIG_FIH_SDM630_SDM660_PROJS)
+	/* FIH, to support fih apr { */
+	fih_rere_wt_imem(FIH_RERE_KERNEL_SHUTDOWN);
+	pr_info("%s: rere = 0x%08x\n", __func__, fih_rere_rd_imem());
+	/* FIH, to support fih apr } */
+#endif
+
 	blocking_notifier_call_chain(&reboot_notifier_list,
 		(state == SYSTEM_HALT) ? SYS_HALT : SYS_POWER_OFF, NULL);
 	system_state = state;
