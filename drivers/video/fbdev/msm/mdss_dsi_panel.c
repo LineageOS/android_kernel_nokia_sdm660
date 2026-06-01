@@ -415,25 +415,26 @@ static int mdss_dsi_request_gpios(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	}
 
 #if defined(CONFIG_LONGCHEER_SDM660_PROJS)
-        rc = gpio_request(ctrl_pdata->px8418_reset_gpio,"px8418_reset");
-#endif
+	rc = gpio_request(ctrl_pdata->px8418_reset_gpio, "px8418_reset");
+	if (rc) {
+		pr_err("request px8418_reset gpio failed, rc=%d\n", rc);
+		goto px8418_rst_gpio_err;
+	}
+#else
 	rc = gpio_request(ctrl_pdata->rst_gpio, "disp_rst_n");
 	if (rc) {
-#if defined(CONFIG_LONGCHEER_SDM660_PROJS)
-		pr_err("request px8418_reset gpio failed, rc=%d\n",rc);
-		goto px8418_rst_gpio_err;
-#else
-		pr_err("request reset gpio failed, rc=%d\n",
-			rc);
-#endif
+		pr_err("request reset gpio failed, rc=%d\n", rc);
 #if defined(CONFIG_FIH_TAISHAN)
 		if (ctrl_pdata->panel_data.panel_info.panel_id != FIH_FT8719_1080P_VIDEO_PANEL) {
 			goto rst_gpio_err;
 		} else {
 			rc = 0;
 		}
+#else
+		goto rst_gpio_err;
 #endif
 	}
+#endif
 
 	if (gpio_is_valid(ctrl_pdata->bklt_en_gpio)) {
 		rc = gpio_request(ctrl_pdata->bklt_en_gpio,
