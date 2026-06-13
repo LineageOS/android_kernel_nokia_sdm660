@@ -664,8 +664,19 @@ static int sec_nfc_suspend(struct device *dev)
 {
 	struct sec_nfc_info *info = SEC_NFC_GET_INFO(dev);
 	int ret = 0;
+#if defined(CONFIG_LONGCHEER_SDM660_PROJS) && defined(CONFIG_SEC_NFC_CLK_REQ)
+	bool clk_req_high;
+	struct sec_nfc_platform_data *pdata = info->pdata;
+#endif
 
 	mutex_lock(&info->mutex);
+#if defined(CONFIG_LONGCHEER_SDM660_PROJS) && defined(CONFIG_SEC_NFC_CLK_REQ)
+	clk_req_high = gpio_get_value(pdata->clk_req) > 0 ? true : false;
+	if (clk_req_high) {
+		pr_err("nfc is requesting clk, abort suspend!\n");
+		ret = -EPERM;
+	}
+#endif
 
 	if (info->mode == SEC_NFC_MODE_BOOTLOADER)
 		ret = -EPERM;
@@ -698,10 +709,14 @@ static int sec_nfc_parse_dt(struct device *dev,
 #ifdef CONFIG_SEC_NFC_CLK_REQ
 	pdata->clk_req = of_get_named_gpio(np, "sec-nfc,clk_req-gpio", 0);
 
+#if defined(CONFIG_LONGCHEER_SDM660_PROJS)
+	pdata->clk = devm_clk_get(dev, "OSC_NFC");
+#else
 	pdata->clk = devm_clk_get(dev, "ref_clk");
+#endif
 	if (IS_ERR(pdata->clk)) {
-			pr_err("can't get nfc clock dts config: clk_19m\n");
-			return -1;
+		pr_err("can't get nfc clock dts config: clk_19m\n");
+		return -1;
 	}
 	clk_prepare_enable(pdata->clk);
 #endif
@@ -920,12 +935,14 @@ static sec_nfc_driver_type sec_nfc_driver = {
 
 static int __init sec_nfc_init(void)
 {
+#if defined(CONFIG_FIH_SDM630_SDM660_PROJS)
 	if(strstr(saved_command_line, "androidboot.nfc=sec") == NULL)
 	{
 		pr_info("%s This NFC vendor is not samsung.\n",__func__);
 		return 0;
 	}
 	pr_info("%s This NFC vendor is samsung.\n",__func__);
+#endif
 	return SEC_NFC_INIT(&sec_nfc_driver);
 }
 
