@@ -3880,7 +3880,7 @@ void mdss_panelinfo_to_fb_var(struct mdss_panel_info *pinfo,
 	//SW4-HL-Display-CTS_Xdpi_Ydpi-00+{_20151112
 	if (pinfo->physical_width_full)
 	{
-		var->width = pinfo->physical_width_full;
+		var->width = pinfo->physical_width_full / 100;
 	}
 	else
 	{
@@ -3892,7 +3892,7 @@ void mdss_panelinfo_to_fb_var(struct mdss_panel_info *pinfo,
 
 	if (pinfo->physical_height_full)
 	{
-		var->height = pinfo->physical_height_full;
+		var->height = pinfo->physical_height_full / 100;
 	}
 	else
 	{
